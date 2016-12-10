@@ -1,21 +1,28 @@
 #pragma once
 
+#include <memory>
+
 template <class DataInst, int Size>
 class NetStateStore
 {
 public:
 
-  DataInst & Get(int index)
+  void StoreState(const std::shared_ptr<DataInst> & state, int index)
   {
-    return m_Store[index];
+    m_Store[index] = state;
   }
 
-  const DataInst & Get(int index)
+  DataInst * Get(int index)
   {
-    return m_Store[index];
+    return m_Store[index].get();
+  }
+
+  const DataInst * Get(int index)
+  {
+    return m_Store[index].get();
   }
 
 private:
-  DataInst m_Store[Size];
+  std::shared_ptr<DataInst> m_Store[Size];
 };
 

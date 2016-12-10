@@ -221,10 +221,6 @@ private:
   void Set(NumericType val)
   {
     m_Value = std::max(Min, std::min(Max, val));
-
-#ifdef REFLECTION_CHANGE_NOTIFIER
-    ReflectionNotifySet(m_ReflectionInfo, m_Value);
-#endif
   }
 
   NumericType m_Value;

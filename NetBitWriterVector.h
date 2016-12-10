@@ -22,7 +22,11 @@ public:
   NetBitWriterCursor Reserve(int num_bits);
   void RollBack(NetBitWriterCursor & cursor);
 
+  void Reset();
+
 private:
+  friend class NetBitReaderVector;
+
   std::vector<uint8_t> m_Buffer;
   int m_Bit = 8;
 };

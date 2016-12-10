@@ -1,35 +1,69 @@
-#pragma once
 
-#include "NetReflectionCommon.h"
+#include <StormRefl/StormReflMetaEnum.h>
 
-#include "NetSerialize.h"
-#include "NetDeserialize.h"
-
+#include <hash/Hash.h>
 
 template <class EnumType>
 class NetEnum
 {
 public:
 
-  NetEnum()
+  NetEnum() :
+    m_Value((EnumType)0)
   {
-    
+
   }
 
-  NetEnum(EnumType val)
+  NetEnum(const NetEnum<EnumType> & rhs) :
+    m_Value(rhs.m_Value)
   {
-    m_Value = val;
   }
-  
+
+  NetEnum(NetEnum<EnumType> && rhs) :
+    m_Value(rhs.m_Value)
+  {
+
+  }
+
+  NetEnum(EnumType val) :
+    m_Value(val)
+  {
+  }
+
   const EnumType & operator = (EnumType val)
   {
     Set(val);
     return m_Value;
   }
 
+  const EnumType & operator = (const char * val)
+  {
+    auto hash = crc32(val);
+    EnumType out;
+
+    if (StormReflGetEnumFromHash(out, hash))
+    {
+      Set(out);
+    }
+
+    return m_Value;
+  }
+
+  const EnumType & operator = (const NetEnum<EnumType> & rhs)
+  {
+    Set(rhs.m_Value);
+    return m_Value;
+  }
+
+  const EnumType & operator = (NetEnum<EnumType> && rhs)
+  {
+    Set(rhs.m_Value);
+    return m_Value;
+  }
+
   operator int() const
   {
-    return m_Value._to_integral();
+    return (int)m_Value;
   }
 
   operator EnumType() const
@@ -37,14 +71,9 @@ public:
     return m_Value;
   }
 
-  int _to_integral() const
+  czstr ToString() const
   {
-    return m_Value._to_integral();
-  }
-
-  czstr _to_string() const
-  {
-    return m_Value._to_string();
+    return StormReflGetEnumAsString(m_Value);
   }
 
   bool operator == (EnumType val) const
@@ -86,10 +115,6 @@ private:
   void Set(EnumType val)
   {
     m_Value = val;
-
-#ifdef REFLECTION_CHANGE_NOTIFIER
-    ReflectionNotifySet(m_ReflectionInfo, _to_string());
-#endif
   }
 
   EnumType m_Value;
@@ -100,7 +125,7 @@ struct NetSerializer<NetEnum<EnumType>, NetBitWriter>
 {
   void operator()(const NetEnum<EnumType> & val, NetBitWriter & writer)
   {
-    writer.WriteBits(static_cast<int>(val), GetRequiredBits(EnumType::_size()));
+    writer.WriteBits(static_cast<int>(val), GetRequiredBits(StormReflGetEnumElemCount<EnumType>()));
   }
 };
 
@@ -109,7 +134,7 @@ struct NetDeserializer<NetEnum<EnumType>, NetBitReader>
 {
   void operator()(NetEnum<EnumType> & val, NetBitReader & reader)
   {
-    uint64_t enum_val = reader.ReadUBits(GetRequiredBits(EnumType::_size()));
+    uint64_t enum_val = reader.ReadUBits(GetRequiredBits(StormReflGetEnumElemCount<EnumType>()));
     val = static_cast<EnumType>(enum_val);
   }
 };

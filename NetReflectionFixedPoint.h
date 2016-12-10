@@ -257,10 +257,6 @@ private:
   void Set(StorageType val)
   {
     m_Value = (val & kMask);
-
-#ifdef REFLECTION_CHANGE_NOTIFIER
-    ReflectionNotifySet(m_ReflectionInfo, m_Val);
-#endif
   }
 
   static const StorageType kMask = NumBits >= sizeof(StorageType) ? StorageType(-1) : ((StorageType(1) << NumBits) - 1);

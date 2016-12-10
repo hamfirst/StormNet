@@ -114,3 +114,9 @@ void NetBitWriterVector::RollBack(NetBitWriterCursor & cursor)
   m_Buffer.resize(cursor.m_Byte + 1);
   m_Bit = cursor.m_Bit;
 }
+
+void NetBitWriterVector::Reset()
+{
+  m_Buffer.clear();
+  m_Bit = 8;
+}

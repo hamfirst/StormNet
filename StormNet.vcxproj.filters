@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="NetReflection.h" />
+    <ClInclude Include="NetReflectionCommon.h" />
+    <ClInclude Include="NetReflectionEnum.h" />
+    <ClInclude Include="NetReflectionList.h" />
+    <ClInclude Include="NetReflectionMap.h" />
+    <ClInclude Include="NetReflectionNumber.h" />
+    <ClInclude Include="NetBitWriter.h" />
+    <ClInclude Include="NetBitReader.h" />
+    <ClInclude Include="NetBitUtil.h" />
+    <ClInclude Include="NetSerialize.h" />
+    <ClInclude Include="NetReflectionPolymorphic.h" />
+    <ClInclude Include="NetReflectionTypeDatabase.h" />
+    <ClInclude Include="NetReflectionFixedPoint.h" />
+    <ClInclude Include="NetDeserialize.h" />
+    <ClInclude Include="NetSerializeDelta.h" />
+    <ClInclude Include="NetDeserializeDelta.h" />
+    <ClInclude Include="NetReflectionArrayList.h" />
+    <ClInclude Include="NetReflectionSparseList.h" />
+    <ClInclude Include="NetReflectionString.h" />
+    <ClInclude Include="NetException.h" />
+    <ClInclude Include="NetReflectionStruct.h" />
+    <ClInclude Include="NetBindings.h" />
+    <ClInclude Include="NetBindingHelpers.h" />
+    <ClInclude Include="NetStateStore.h" />
+    <ClInclude Include="NetBitWriterVector.h" />
+    <ClInclude Include="NetBitReaderBuffer.h" />
+    <ClInclude Include="NetProtocol.h" />
+    <ClInclude Include="NetMetaUtil.h" />
+    <ClInclude Include="NetProtocolSender.h" />
+    <ClInclude Include="NetProtocolReceiver.h" />
+    <ClInclude Include="NetTransmitter.h" />
+    <ClInclude Include="NetTransmitterMemory.h" />
+    <ClInclude Include="NetBitReaderVector.h" />
+    <ClInclude Include="NetPipeDeltaState.h" />
+    <ClInclude Include="NetPipeFullState.h" />
+    <ClInclude Include="NetPipeMessage.h" />
+    <ClInclude Include="NetServerBackend.h" />
+    <ClInclude Include="NetServerInterface.h" />
+    <ClInclude Include="NetClientInterface.h" />
+    <ClInclude Include="NetPipeMode.h" />
+    <ClInclude Include="NetClientBackend.h" />
+    <ClInclude Include="NetTransmitterEnet.h" />
+    <ClInclude Include="NetServer.h" />
+    <ClInclude Include="NetClient.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NetBitReader.cpp" />
+    <ClCompile Include="NetReflectionTypeDatabase.cpp" />
+    <ClCompile Include="NetBitWriterVector.cpp" />
+    <ClCompile Include="NetBitReaderBuffer.cpp" />
+    <ClCompile Include="NetBitReaderVector.cpp" />
+    <ClCompile Include="NetTransmitterMemory.cpp" />
+    <ClCompile Include="NetTransmitterEnet.cpp" />
+  </ItemGroup>
+</Project>
