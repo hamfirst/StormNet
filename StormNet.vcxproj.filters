@@ -1,58 +1,110 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="NetReflection.h" />
-    <ClInclude Include="NetReflectionCommon.h" />
-    <ClInclude Include="NetReflectionEnum.h" />
-    <ClInclude Include="NetReflectionList.h" />
-    <ClInclude Include="NetReflectionMap.h" />
-    <ClInclude Include="NetReflectionNumber.h" />
     <ClInclude Include="NetBitWriter.h" />
     <ClInclude Include="NetBitReader.h" />
     <ClInclude Include="NetBitUtil.h" />
-    <ClInclude Include="NetSerialize.h" />
-    <ClInclude Include="NetReflectionPolymorphic.h" />
-    <ClInclude Include="NetReflectionTypeDatabase.h" />
-    <ClInclude Include="NetReflectionFixedPoint.h" />
     <ClInclude Include="NetDeserialize.h" />
-    <ClInclude Include="NetSerializeDelta.h" />
     <ClInclude Include="NetDeserializeDelta.h" />
-    <ClInclude Include="NetReflectionArrayList.h" />
-    <ClInclude Include="NetReflectionSparseList.h" />
-    <ClInclude Include="NetReflectionString.h" />
     <ClInclude Include="NetException.h" />
-    <ClInclude Include="NetReflectionStruct.h" />
     <ClInclude Include="NetBindings.h" />
     <ClInclude Include="NetBindingHelpers.h" />
     <ClInclude Include="NetStateStore.h" />
     <ClInclude Include="NetBitWriterVector.h" />
     <ClInclude Include="NetBitReaderBuffer.h" />
-    <ClInclude Include="NetProtocol.h" />
     <ClInclude Include="NetMetaUtil.h" />
-    <ClInclude Include="NetProtocolSender.h" />
-    <ClInclude Include="NetProtocolReceiver.h" />
     <ClInclude Include="NetTransmitter.h" />
     <ClInclude Include="NetTransmitterMemory.h" />
     <ClInclude Include="NetBitReaderVector.h" />
-    <ClInclude Include="NetPipeDeltaState.h" />
-    <ClInclude Include="NetPipeFullState.h" />
-    <ClInclude Include="NetPipeMessage.h" />
     <ClInclude Include="NetServerBackend.h" />
     <ClInclude Include="NetServerInterface.h" />
     <ClInclude Include="NetClientInterface.h" />
-    <ClInclude Include="NetPipeMode.h" />
     <ClInclude Include="NetClientBackend.h" />
-    <ClInclude Include="NetTransmitterEnet.h" />
     <ClInclude Include="NetServer.h" />
     <ClInclude Include="NetClient.h" />
+    <ClInclude Include="NetReflection.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionArrayList.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionCommon.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionEnum.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionFixedPoint.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionList.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionMap.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionNumber.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionPolymorphic.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionSparseList.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionString.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionStruct.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionTypeDatabase.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetPipeDeltaState.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetPipeFullState.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetPipeMessage.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetPipeMode.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetProtocol.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetProtocolReceiver.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetProtocolSender.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetSerialize.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetSerializeDelta.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />
-    <ClCompile Include="NetReflectionTypeDatabase.cpp" />
     <ClCompile Include="NetBitWriterVector.cpp" />
     <ClCompile Include="NetBitReaderBuffer.cpp" />
     <ClCompile Include="NetBitReaderVector.cpp" />
     <ClCompile Include="NetTransmitterMemory.cpp" />
-    <ClCompile Include="NetTransmitterEnet.cpp" />
+    <ClCompile Include="NetReflectionTypeDatabase.cpp">
+      <Filter>Reflection</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Reflection">
+      <UniqueIdentifier>{dada77b6-a47c-4e37-b027-b14b650a3c4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipes">
+      <UniqueIdentifier>{1e20dde9-1ae5-4e26-9d53-9191dbf7ac2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

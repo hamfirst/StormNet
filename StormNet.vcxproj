@@ -191,10 +191,6 @@
     <ClInclude Include="NetServerInterface.h" />
     <ClInclude Include="NetStateStore.h" />
     <ClInclude Include="NetTransmitter.h" />
-    <ClInclude Include="NetTransmitterEnet.h">
-      <SubType>
-      </SubType>
-    </ClInclude>
     <ClInclude Include="NetTransmitterMemory.h" />
   </ItemGroup>
   <ItemGroup>
@@ -206,10 +202,6 @@
     </ClCompile>
     <ClCompile Include="NetBitWriterVector.cpp" />
     <ClCompile Include="NetReflectionTypeDatabase.cpp" />
-    <ClCompile Include="NetTransmitterEnet.cpp">
-      <SubType>
-      </SubType>
-    </ClCompile>
     <ClCompile Include="NetTransmitterMemory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -21,10 +21,12 @@
   <ItemGroup>
     <ClCompile Include="NetClientBackendEnet.cpp" />
     <ClCompile Include="NetServerBackendEnet.cpp" />
+    <ClCompile Include="NetTransmitterEnet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetClientBackendEnet.h" />
     <ClInclude Include="NetServerBackendEnet.h" />
+    <ClInclude Include="NetTransmitterEnet.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{38144850-9225-4138-BBB5-F5401AD9A6DB}</ProjectGuid>
