@@ -61,7 +61,7 @@ public:
   }
 
   template <class... Args>
-  void EmplaceBack(Args &&... args)
+  T & EmplaceBack(Args &&... args)
   {
     if (m_Values.size() >= MaxSize)
     {
@@ -69,9 +69,10 @@ public:
     }
 
     m_Values.emplace_back(std::forward<Args>(args)...);
+    return m_Values[m_Values.size() - 1];
   }
 
-  void InsertAt(const T & val, std::size_t logical_index)
+  T & InsertAt(const T & val, std::size_t logical_index)
   {
     if (m_Values.size() >= MaxSize)
     {
@@ -85,10 +86,11 @@ public:
     }
 
     m_Values.insert(m_Values.begin() + logical_index, val);
+    return m_Values[logical_index];
   }
 
   template <class... Args>
-  void EmplaceAt(std::size_t logical_index, Args &&... args)
+  T & EmplaceAt(std::size_t logical_index, Args &&... args)
   {
     if (m_Values.size() >= MaxSize)
     {
@@ -102,6 +104,7 @@ public:
     }
 
     m_Values.emplace(m_Values.begin() + logical_index, std::forward<Args>(args)...);
+    return m_Values[logical_index];
   }
 
   void RemoveAt(std::size_t logical_index)

@@ -151,7 +151,7 @@ public:
   void Clear()
   {
     m_Values.clear();
-    m_HighestIndex = 0;
+    m_HighestIndex = -1;
   }
 
   void Reserve(std::size_t size)
@@ -171,18 +171,19 @@ public:
   }
 
   template <class... Args>
-  void EmplaceBack(Args &&... args)
+  T & EmplaceBack(Args &&... args)
   {
     if (m_HighestIndex + 1 >= MaxSize)
     {
       NET_THROW(std::runtime_error("NetSparseList overflow"));
     }
 
-    m_HighestIndex = m_Values.size();
+    m_HighestIndex = (int)m_Values.size();
     m_Values.emplace_back(std::experimental::in_place, std::forward<Args>(args)...);
+    return m_Values[m_HighestIndex].value();
   }
 
-  void InsertAt(const T & val, std::size_t logical_index)
+  T & InsertAt(const T & val, std::size_t logical_index)
   {
     if (logical_index >= MaxSize)
     {
@@ -193,10 +194,11 @@ public:
 
     m_Values[logical_index] = std::experimental::optional<T>(val);
     m_HighestIndex = std::max(m_HighestIndex, logical_index);
+    return m_Values[logical_index].value();
   }
 
   template <class... Args>
-  void EmplaceAt(std::size_t logical_index, Args &&... args)
+  T & EmplaceAt(std::size_t logical_index, Args &&... args)
   {
     if (logical_index >= MaxSize)
     {
@@ -207,6 +209,7 @@ public:
 
     m_Values[logical_index] = std::experimental::optional<T>(std::experimental::in_place, std::forward<Args>(args)...);
     m_HighestIndex = std::max(m_HighestIndex, logical_index);
+    return m_Values[logical_index].value();
   }
 
   void RemoveAt(std::size_t logical_index)
@@ -220,11 +223,21 @@ public:
 
     if (m_HighestIndex == logical_index)
     {
-      for (std::size_t index = m_HighestIndex; index >= 0 && static_cast<bool>(m_Values[index]) == false; index--)
+      for (int index = m_HighestIndex; index >= 0 && static_cast<bool>(m_Values[index]) == false; index--)
       {
         m_HighestIndex--;
       }
     }
+  }
+
+  bool HasAt(std::size_t logical_index) const
+  {
+    if (logical_index >= m_Values.size())
+    {
+      return false;
+    }
+
+    return (bool)m_Values[logical_index];
   }
 
   auto & operator [] (std::size_t index)
@@ -237,7 +250,7 @@ public:
     return *m_Values[index];
   }
 
-  std::size_t HighestIndex() const
+  int HighestIndex() const
   {
     return m_HighestIndex;
   }
@@ -261,7 +274,7 @@ public:
 
   NetSparseListIterator end()
   {
-    NetSparseListIterator itr(this, m_HighestIndex);
+    NetSparseListIterator itr(this, m_HighestIndex + 1);
     return itr;
   }
 
@@ -279,14 +292,14 @@ public:
 
   NetSparseListIteratorConst end() const
   {
-    NetSparseListIteratorConst itr(this, m_HighestIndex);
+    NetSparseListIteratorConst itr(this, m_HighestIndex + 1);
     return itr;
   }
 
 private:
 
   std::vector<std::experimental::optional<T>> m_Values;
-  std::size_t m_HighestIndex = 0;
+  int m_HighestIndex = -1;
 };
 
 

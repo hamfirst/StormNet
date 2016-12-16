@@ -163,11 +163,14 @@
     <ClInclude Include="NetDeserialize.h" />
     <ClInclude Include="NetDeserializeDelta.h" />
     <ClInclude Include="NetException.h" />
+    <ClInclude Include="NetMessageSender.h" />
     <ClInclude Include="NetMetaUtil.h" />
     <ClInclude Include="NetPipeDeltaState.h" />
     <ClInclude Include="NetPipeFullState.h" />
     <ClInclude Include="NetPipeMessage.h" />
     <ClInclude Include="NetPipeMode.h" />
+    <ClInclude Include="NetPipeSink.h" />
+    <ClInclude Include="NetPipeSource.h" />
     <ClInclude Include="NetProtocol.h" />
     <ClInclude Include="NetProtocolReceiver.h" />
     <ClInclude Include="NetProtocolSender.h" />

@@ -88,6 +88,13 @@
     <ClInclude Include="NetSerializeDelta.h">
       <Filter>Reflection</Filter>
     </ClInclude>
+    <ClInclude Include="NetPipeSink.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetPipeSource.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetMessageSender.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />

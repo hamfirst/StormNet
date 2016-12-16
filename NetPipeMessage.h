@@ -5,6 +5,7 @@
 
 #include "NetSerialize.h"
 #include "NetDeserialize.h"
+#include "NetPipeSink.h"
 #include "NetPipeMode.h"
 
 class NetBitWriter;
@@ -41,6 +42,9 @@ public:
   }
 
 private:
+
+  template <typename BaseClass>
+  friend class NetMessageSender<BaseClass>;
 
   Sink m_Sink;
 };

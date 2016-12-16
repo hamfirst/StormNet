@@ -7,6 +7,7 @@
 #include "NetTransmitter.h"
 #include "NetBitUtil.h"
 #include "NetMetaUtil.h"
+#include "NetPipeSink.h"
 
 template <typename ... MessagePipeTypes>
 class NetProtocolSender
@@ -44,7 +45,7 @@ public:
 
 private:
 
-  struct NetSenderProtocolSink
+  struct NetSenderProtocolSink : public NetPipeSink
   {
     int m_ChannelIndex;
     NetTransmitter *m_Transmitter;
