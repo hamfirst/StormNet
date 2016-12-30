@@ -193,7 +193,7 @@ public:
     m_Values.resize(std::max(m_Values.size(), logical_index + 1));
 
     m_Values[logical_index] = std::experimental::optional<T>(val);
-    m_HighestIndex = std::max(m_HighestIndex, logical_index);
+    m_HighestIndex = std::max(m_HighestIndex, (int)logical_index);
     return m_Values[logical_index].value();
   }
 
@@ -208,7 +208,7 @@ public:
     m_Values.resize(std::max(m_Values.size(), logical_index + 1));
 
     m_Values[logical_index] = std::experimental::optional<T>(std::experimental::in_place, std::forward<Args>(args)...);
-    m_HighestIndex = std::max(m_HighestIndex, logical_index);
+    m_HighestIndex = std::max(m_HighestIndex, (int)logical_index);
     return m_Values[logical_index].value();
   }
 
@@ -263,7 +263,7 @@ public:
   NetSparseListIterator begin()
   {
     int start_index = 0;
-    while (start_index < m_HighestIndex && static_cast<bool>(m_Values[start_index]) == false)
+    while ((int)start_index < m_HighestIndex && static_cast<bool>(m_Values[start_index]) == false)
     {
       start_index++;
     }
@@ -281,7 +281,7 @@ public:
   NetSparseListIteratorConst begin() const
   {
     std::size_t start_index = 0;
-    while (start_index < m_HighestIndex && static_cast<bool>(m_Values[start_index]) == false)
+    while ((int)start_index < m_HighestIndex && static_cast<bool>(m_Values[start_index]) == false)
     {
       start_index++;
     }

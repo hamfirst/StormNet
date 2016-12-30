@@ -19,6 +19,11 @@ public:
 
   }
 
+  ~NetServer()
+  {
+
+  }
+
   void DisconnectClient(ClientDef * client_def)
   {
     uint32_t connection_id =(uint32_t)m_Clients.GetIndexAt(client_def);
