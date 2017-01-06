@@ -13,12 +13,22 @@ struct NetTransmitterEnet;
 
 struct NetServerSettingsEnet
 {
-  uint16_t Port = 60000;
-  uint32_t LocalAddr = 0;
+  NetServerSettingsEnet(uint16_t port = 60000, uint32_t local_addr = 0, uint32_t max_connections = 256, uint32_t max_inc_bw = 0, uint32_t max_out_bw = 0) :
+    Port(port),
+    LocalAddr(local_addr),
+    MaxConnections(max_connections),
+    MaxIncBandwidth(max_inc_bw),
+    MaxOutBandwidth(max_out_bw)
+  {
 
-  uint32_t MaxConnections = 256;
-  uint32_t MaxIncBandwidth = 0;
-  uint32_t MaxOutBandwidth = 0;
+  }
+
+  uint16_t Port;
+  uint32_t LocalAddr;
+
+  uint32_t MaxConnections;
+  uint32_t MaxIncBandwidth;
+  uint32_t MaxOutBandwidth;
 };
 
 

@@ -2,38 +2,42 @@
 
 #include <memory>
 #include <functional>
+#include <type_traits>
 
 #include "NetSerialize.h"
 #include "NetDeserialize.h"
-#include "NetPipeSink.h"
 #include "NetPipeMode.h"
 
 class NetBitWriter;
 class NetBitReader;
 
-template <class BaseClass, class Sink>
+template <class BaseClass>
 class NetPipeMessageSender
 {
 public:
 
-  NetPipeMessageSender(const Sink & sink) :
-    m_Sink(sink)
+  void Initialize(NetTransmitter * transmitter, NetPipeMode mode, int channel_index, int channel_bits)
   {
-
+    m_Transmitter = transmitter;
+    m_Mode = mode;
+    m_ChannelIndex = channel_index;
+    m_ChannelBits = channel_bits;
   }
 
   template <class DataType>
   void SendMessage(const DataType & data)
   {
+    static_assert(std::is_base_of<BaseClass, DataType>::value, "Must send a data type that derives from the base type");
+
     auto & type_db = BaseClass::__s_TypeDatabase;
     auto class_id = type_db.GetClassId<DataType>();
 
-    NetBitWriter & writer = m_Sink.CreateMessage();
+    NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
 
     writer.WriteBits(class_id, GetRequiredBits(type_db.GetNumTypes() - 1));
     NetSerializeValue(data, writer);
 
-    m_Sink.SendMessage(writer);
+    m_Transmitter->SendMessage(writer);
   }
 
   void GotAck(NetBitReader & reader)
@@ -44,23 +48,29 @@ public:
 private:
 
   template <typename BaseClass>
-  friend class NetMessageSender<BaseClass>;
+  friend class NetMessageSender;
 
-  Sink m_Sink;
+  NetTransmitter * m_Transmitter;
+  NetPipeMode m_Mode;
+  int m_ChannelIndex;
+  int m_ChannelBits;
 };
 
-template <class BaseClass, class Source>
+template <class BaseClass>
 class NetPipeMessageReceiver
 {
 public:
 
-  NetPipeMessageReceiver(const Source & source) :
-    m_Source(source)
+  NetPipeMessageReceiver()
   {
     auto & type_db = BaseClass::__s_TypeDatabase;
     m_Callbacks = std::make_unique<std::function<void(NetBitReader &)>[]>(type_db.GetNumTypes());
   }
 
+  void Initialize(NetTransmitter * transmitter, NetPipeMode mode, int channel_index, int channel_bits)
+  {
+
+  }
 
   template <typename DataType>
   void RegisterCallback(void(*func)(const DataType &))
@@ -71,19 +81,20 @@ public:
   template <typename C, typename DataType>
   void RegisterCallback(void(C::*func)(const DataType &), C * c)
   {
-    RegisterCallbackInteral<DataType>([=](const DataType & data) { c->*func(data); });
+    auto callback_func = [=](const DataType & data) { (c->*func)(data); };
+    RegisterCallbackInteral<DataType, decltype(callback_func)>(callback_func);
   }
 
   template <typename DataType, typename Callback>
   void RegisterCallback(Callback callback)
   {
-    RegisterCallbackInteral<DataType>(callback);
+    RegisterCallbackInteral<DataType, Callback>(callback);
   }
 
   void GotMessage(NetBitReader & reader)
   {
     auto & type_db = BaseClass::__s_TypeDatabase;
-    auto class_id = reader.ReadUBits(GetRequiredBits(BaseClass::__s_TypeDatabase.GetNumTypes() - 1));
+    auto class_id = (std::size_t)reader.ReadUBits(GetRequiredBits(BaseClass::__s_TypeDatabase.GetNumTypes() - 1));
 
     if (m_Callbacks[class_id])
     {
@@ -106,7 +117,7 @@ protected:
   }
 
   template <class DataType, class CallbackType>
-  void RegisterCallbackInteral(CallbackType callback)
+  void RegisterCallbackInteral(CallbackType & callback)
   {
     auto & type_db = BaseClass::__s_TypeDatabase;
     auto class_id = type_db.GetClassId<DataType>();
@@ -123,29 +134,14 @@ protected:
 
 private:
   std::unique_ptr<std::function<void(NetBitReader &)>[]> m_Callbacks;
-  Source m_Source;
 };
 
 template <class BaseClass, NetPipeMode Mode = NetPipeMode::kReliable>
 struct NetPipeMessage
 {
-  template <typename Sink>
-  using SenderType = NetPipeMessageSender<BaseClass, Sink>;
+  using SenderType = NetPipeMessageSender<BaseClass>;
 
-  template <typename Source>
-  using ReceiverType = NetPipeMessageReceiver<BaseClass, Source>;
+  using ReceiverType = NetPipeMessageReceiver<BaseClass>;
 
   static const NetPipeMode PipeMode = Mode;
-
-  template <typename Sink>
-  auto MakeSender(Sink && sink)
-  {
-    return NetPipeMessageSender<BaseClass, Sink>(std::forward<Sink>(sink));
-  }
-
-  template <typename Source>
-  auto MakeReceiver(Source && source)
-  {
-    return NetPipeMessageSender<BaseClass, Source>(std::forward<Source>(source));
-  }
 };

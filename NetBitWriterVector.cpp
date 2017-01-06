@@ -4,11 +4,10 @@
 
 #include <algorithm>
 
-NetBitWriterVector::NetBitWriterVector(int reserve_bytes)
-  : m_Buffer(reserve_bytes),
+NetBitWriterVector::NetBitWriterVector(int reserve_bytes) : 
   m_Bit(8)
 {
-
+  m_Buffer.reserve(reserve_bytes);
 }
 
 void NetBitWriterVector::WriteBits(uint64_t val, int num_bits)
@@ -49,7 +48,7 @@ void NetBitWriterVector::WriteBits(NetBitWriterCursor & cursor, uint64_t val, in
     return;
   }
 
-  if (num_bits > cursor.m_Size)
+  if (num_bits > (int)cursor.m_Size)
   {
     NET_THROW(std::out_of_range("NetBitWriterCursor overflow"));
   }
@@ -95,6 +94,22 @@ void NetBitWriterVector::WriteBits(NetBitWriterCursor & cursor, uint64_t val, in
 void NetBitWriterVector::WriteSBits(NetBitWriterCursor & cursor, int64_t val, int num_bits)
 {
   WriteBits(cursor, (uint64_t)val, num_bits);
+}
+
+
+void NetBitWriterVector::WriteBuffer(void * data, std::size_t num_bytes)
+{
+  if (m_Bit == 8 && num_bytes >= 64)
+  {
+    std::size_t prev_size = m_Buffer.size();
+    m_Buffer.resize(prev_size + num_bytes);
+
+    memcpy(m_Buffer.data() + prev_size, data, num_bytes);
+  }
+  else
+  {
+    NetBitWriter::WriteBuffer(data, num_bytes);
+  }
 }
 
 NetBitWriterCursor NetBitWriterVector::Reserve(int num_bits)

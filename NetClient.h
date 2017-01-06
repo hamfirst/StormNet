@@ -11,7 +11,7 @@ class NetClient : public NetClientInterface
 {
 public:
 
-  using ProtocolType = typename NetProtocolInfo<ServerProtocolDef>::template AsymmetricProtocolType<ClientProtocolDef>;
+  using ProtocolType = typename NetProtocolInfo<ClientProtocolDef>::template AsymmetricProtocolType<ServerProtocolDef>;
 
   NetClient(NetClientBackend * backend) :
     m_Backend(backend)

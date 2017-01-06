@@ -16,7 +16,7 @@ NetBitWriter & NetTransmitterEnet::CreateWriter(NetPipeMode mode)
   return m_Writer;
 }
 
-void NetTransmitterEnet::SendMessage(NetBitWriter & writer)
+void NetTransmitterEnet::SendWriter(NetBitWriter & writer)
 {
   uint32_t flags;
   switch (m_WriterMode)
@@ -34,4 +34,6 @@ void NetTransmitterEnet::SendMessage(NetBitWriter & writer)
 
   auto packet = enet_packet_create(m_Writer.GetData(), m_Writer.GetDataSize(), flags);
   enet_peer_send(m_Peer, 0, packet);
+
+  m_Writer.Reset();
 }

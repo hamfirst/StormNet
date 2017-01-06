@@ -10,7 +10,7 @@ class NetTransmitterMemory : public NetTransmitter
 {
 public:
   virtual NetBitWriter & CreateWriter(NetPipeMode mode) override;
-  virtual void SendMessage(NetBitWriter & writer) override;
+  virtual void SendWriter(NetBitWriter & writer) override;
 
   template <typename Protocol>
   bool SendToProtocol(Protocol & protocol)

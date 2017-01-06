@@ -3,7 +3,7 @@
 class NetClientBackend
 {
 public:
-  virtual ~NetClientBackend() = 0;
+  virtual ~NetClientBackend() {};
 
   virtual void Update() = 0;
   virtual void Disconnect() = 0;

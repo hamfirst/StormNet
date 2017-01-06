@@ -7,18 +7,17 @@
 #include "NetTransmitter.h"
 #include "NetBitUtil.h"
 #include "NetMetaUtil.h"
-#include "NetPipeSource.h"
 
 template <typename ... MessagePipeTypes>
 class NetProtocolReceiver
 {
 public:
-  NetProtocolReceiver(NetTransmitter *transmitter)
+  NetProtocolReceiver(NetTransmitter *transmitter, int channel_bits)
   {
     auto initializer = [&](auto & ... elems)
     {
       int channel_index = 0;
-      InitReceiver(channel_index, transmitter, elems...);
+      InitReceiver(channel_index, transmitter, channel_bits, elems...);
     };
 
     NetMetaUtil::Apply(initializer, m_Receivers);
@@ -27,7 +26,7 @@ public:
   template<std::size_t ChannelIndex>
   auto & GetChannel()
   {
-    return *std::get<ChannelIndex>(m_Receivers).get();
+    return std::get<ChannelIndex>(m_Receivers);
   }
 
   void GotMessage(NetBitReader & reader)
@@ -45,45 +44,26 @@ public:
 
 private:
 
-  struct NetSenderProtocolSource : public NetPipeSource
+  template <typename ReceiverType, typename ... Args>
+  void InitReceiver(int & channel_index, NetTransmitter *transmitter, int channel_bits, ReceiverType & receiver, Args && ... args)
   {
-    int m_ChannelIndex;
-    NetTransmitter *m_Transmitter;
-
-    NetBitWriter & CreateAck()
-    {
-      NetBitWriter & writer = m_Transmitter.CreateWriter(NetPipeMode::kUnreliableSequenced);
-      writer.WriteBits(1, 1); // Signal that this is an ack
-      writer.WriteBits((uint64_t)m_ChannelIndex, GetRequiredBits(sizeof...(MessagePipeTypes) - 1));
-      return writer;
-    }
-
-    void SendAck(NetBitWriter & writer)
-    {
-      m_Transmitter.SendMessage(writer);
-    }
-  };
-
-  template <typename SenderType, typename ... Args>
-  void InitReceiver(int & channel_index, NetTransmitter *transmitter, std::unique_ptr<SenderType> & sender_ptr, Args && ... args)
-  {
-    sender_ptr = std::make_unique<SenderType>(NetSenderProtocolSource{ channel_index, transmitter });
+    receiver.Initialize(transmitter, NetPipeMode::kUnreliableSequenced, channel_index, channel_bits);
 
     channel_index++;
-    InitReceiver(channel_index, transmitter, std::forward<Args>(args)...);
+    InitReceiver(channel_index, transmitter, channel_bits, std::forward<Args>(args)...);
   }
 
-  void InitReceiver(int & channel_index, NetTransmitter *transmitter)
+  void InitReceiver(int & channel_index, NetTransmitter *transmitter, int channel_bits)
   {
 
   }
 
   template <typename ReceiverType, typename ... Args>
-  void ProcessMessage(int & channel_index, int & target_index, NetBitReader & reader, std::unique_ptr<ReceiverType> & receiver_ptr, Args && ... args)
+  void ProcessMessage(int & channel_index, int & target_index, NetBitReader & reader, ReceiverType & receiver, Args && ... args)
   {
     if (channel_index == target_index)
     {
-      receiver_ptr->GotMessage(reader);
+      receiver.GotMessage(reader);
       return;
     }
     else
@@ -100,5 +80,5 @@ private:
 
 private:
 
-  std::tuple<std::unique_ptr<typename MessagePipeTypes::template ReceiverType<NetSenderProtocolSource>>...> m_Receivers;
+  std::tuple<typename MessagePipeTypes::ReceiverType...> m_Receivers;
 };

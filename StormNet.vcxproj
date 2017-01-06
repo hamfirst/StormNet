@@ -235,12 +235,11 @@
     <ClInclude Include="NetException.h" />
     <ClInclude Include="NetMessageSender.h" />
     <ClInclude Include="NetMetaUtil.h" />
+    <ClInclude Include="NetPipeBuffer.h" />
     <ClInclude Include="NetPipeDeltaState.h" />
     <ClInclude Include="NetPipeFullState.h" />
     <ClInclude Include="NetPipeMessage.h" />
     <ClInclude Include="NetPipeMode.h" />
-    <ClInclude Include="NetPipeSink.h" />
-    <ClInclude Include="NetPipeSource.h" />
     <ClInclude Include="NetProtocol.h" />
     <ClInclude Include="NetProtocolReceiver.h" />
     <ClInclude Include="NetProtocolSender.h" />
@@ -257,6 +256,7 @@
     <ClInclude Include="NetReflectionString.h" />
     <ClInclude Include="NetReflectionStruct.h" />
     <ClInclude Include="NetReflectionTypeDatabase.h" />
+    <ClInclude Include="NetReflectionTypeDatabaseRegister.h" />
     <ClInclude Include="NetSerialize.h" />
     <ClInclude Include="NetSerializeDelta.h" />
     <ClInclude Include="NetServer.h" />
@@ -265,6 +265,14 @@
     <ClInclude Include="NetStateStore.h" />
     <ClInclude Include="NetTransmitter.h" />
     <ClInclude Include="NetTransmitterMemory.h" />
+    <ClInclude Include="NetTransmitterReplayStream.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="NetTransmitterReplayStreamWriter.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />
@@ -273,9 +281,19 @@
       <SubType>
       </SubType>
     </ClCompile>
+    <ClCompile Include="NetBitWriter.cpp" />
     <ClCompile Include="NetBitWriterVector.cpp" />
     <ClCompile Include="NetReflectionTypeDatabase.cpp" />
+    <ClCompile Include="NetTransmitter.cpp" />
     <ClCompile Include="NetTransmitterMemory.cpp" />
+    <ClCompile Include="NetTransmitterReplayStream.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="NetTransmitterReplayStreamWriter.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

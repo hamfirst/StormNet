@@ -55,6 +55,12 @@ public:
     return (float)m_Value;
   }
 
+  template <typename Type>
+  Type GetAs() const
+  {
+    return (Type)m_Value;
+  }
+
   NumericType operator ++()
   {
     Set(m_Value + 1);

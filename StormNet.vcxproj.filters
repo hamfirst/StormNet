@@ -88,13 +88,15 @@
     <ClInclude Include="NetSerializeDelta.h">
       <Filter>Reflection</Filter>
     </ClInclude>
-    <ClInclude Include="NetPipeSink.h">
-      <Filter>Pipes</Filter>
-    </ClInclude>
-    <ClInclude Include="NetPipeSource.h">
-      <Filter>Pipes</Filter>
-    </ClInclude>
     <ClInclude Include="NetMessageSender.h" />
+    <ClInclude Include="NetReflectionTypeDatabaseRegister.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetPipeBuffer.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetTransmitterReplayStream.h" />
+    <ClInclude Include="NetTransmitterReplayStreamWriter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />
@@ -105,6 +107,10 @@
     <ClCompile Include="NetReflectionTypeDatabase.cpp">
       <Filter>Reflection</Filter>
     </ClCompile>
+    <ClCompile Include="NetBitWriter.cpp" />
+    <ClCompile Include="NetTransmitter.cpp" />
+    <ClCompile Include="NetTransmitterReplayStream.cpp" />
+    <ClCompile Include="NetTransmitterReplayStreamWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Reflection">

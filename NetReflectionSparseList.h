@@ -66,13 +66,13 @@ public:
 
     const std::pair<std::size_t, T &> operator *() const
     {
-      std::pair<std::size_t, T &> val(m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
+      std::pair<std::size_t, T &> val((std::size_t)m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
       return val;
     }
 
     const std::pair<std::size_t, T &> operator ->() const
     {
-      std::pair<std::size_t, T &> val(m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
+      std::pair<std::size_t, T &> val((std::size_t)m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
       return val;
     }
 
@@ -81,14 +81,14 @@ public:
       do
       {
         m_PhysicalIndex++;
-      } while (m_PhysicalIndex < m_List->m_Values.size() && static_cast<bool>(m_List->m_Values[m_PhysicalIndex]) == false);
+      } while (m_PhysicalIndex < m_List->m_HighestIndex && static_cast<bool>(m_List->m_Values[m_PhysicalIndex]) == false);
     }
 
   private:
 
     NetSparseListIterator(NetSparseList<T, MaxSize> * list, std::size_t physical_index) : m_List(list), m_PhysicalIndex(physical_index) { }
 
-    std::size_t m_PhysicalIndex = 0;
+    int m_PhysicalIndex = 0;
     NetSparseList<T, MaxSize> * m_List;
 
     friend class NetSparseList<T, MaxSize>;
@@ -110,13 +110,13 @@ public:
 
     const std::pair<std::size_t, const T &> operator *() const
     {
-      std::pair<std::size_t, const T &> val(m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
+      std::pair<std::size_t, const T &> val((std::size_t)m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
       return val;
     }
 
     const std::pair<std::size_t, const T &> operator ->() const
     {
-      std::pair<std::size_t, const T &> val(m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
+      std::pair<std::size_t, const T &> val((std::size_t)m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
       return val;
     }
 
@@ -125,14 +125,14 @@ public:
       do
       {
         m_PhysicalIndex++;
-      } while (m_PhysicalIndex < m_List->m_Values.size() && static_cast<bool>(m_List->m_Values[m_PhysicalIndex]) == false);
+      } while (m_PhysicalIndex < m_List->m_HighestIndex && static_cast<bool>(m_List->m_Values[m_PhysicalIndex]) == false);
     }
 
   private:
 
     NetSparseListIteratorConst(const NetSparseList<T, MaxSize> * list, std::size_t physical_index) : m_List(list), m_PhysicalIndex(physical_index) { }
 
-    std::size_t m_PhysicalIndex = 0;
+    int m_PhysicalIndex = 0;
     const NetSparseList<T, MaxSize> * m_List;
 
     friend class NetSparseList<T, MaxSize>;
@@ -260,6 +260,11 @@ public:
     return m_Values.size();
   }
 
+  std::size_t GetMaximumCapacity() const
+  {
+    return MaxSize;
+  }
+
   NetSparseListIterator begin()
   {
     int start_index = 0;
@@ -347,7 +352,7 @@ struct NetSerializerDelta<NetSparseList<T, MaxSize>, NetBitWriter>
 
     auto size_cursor = writer.Reserve(required_bits);
 
-    for (auto index = 0; index < val.Size(); index++)
+    for (std::size_t index = 0; index < val.Size(); index++)
     {
       auto index_cursor = writer.Reserve(required_bits);
 
@@ -404,11 +409,11 @@ struct NetDeserializer<NetSparseList<T, MaxSize>, NetBitReader>
     auto key_bits = GetRequiredBits(MaxSize);
     auto num_elements = reader.ReadUBits(key_bits);
 
-    std::size_t current_index = 0;
+    int current_index = 0;
 
     while (num_elements > 0)
     {
-      std::size_t input_index = reader.ReadUBits(key_bits);
+      int input_index = (int)reader.ReadUBits(key_bits);
       while (current_index < input_index)
       {
         val.RemoveAt(current_index);
@@ -449,21 +454,21 @@ struct NetDeserializerDelta<NetSparseList<T, MaxSize>, NetBitReader>
     {
       auto index = reader.ReadUBits(required_bits);
 
-      if (val.HasElementAt(index) == false)
+      if (val.HasElementAt((std::size_t)index) == false)
       {
-        val.EmplaceAt(index);
-        NetDeserializeValue(val[index], reader);
+        val.EmplaceAt((std::size_t)index);
+        NetDeserializeValue(val[(std::size_t)index], reader);
       }
       else
       {
         auto existing_elem = reader.ReadUBits(1);
         if (existing_elem)
         {
-          NetDeserializeValueDelta(val[index], reader);
+          NetDeserializeValueDelta(val[(std::size_t)index], reader);
         }
         else
         {
-          val.RemoveAt(index);
+          val.RemoveAt((std::size_t)index);
         }
       }
     }

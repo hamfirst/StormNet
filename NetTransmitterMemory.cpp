@@ -6,7 +6,7 @@ NetBitWriter & NetTransmitterMemory::CreateWriter(NetPipeMode mode)
   return m_PendingPacket;
 }
 
-void NetTransmitterMemory::SendMessage(NetBitWriter & writer)
+void NetTransmitterMemory::SendWriter(NetBitWriter & writer)
 {
   m_OutgoingPackets.emplace(std::move(m_PendingPacket));
 }

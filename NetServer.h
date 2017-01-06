@@ -47,10 +47,7 @@ protected:
     return true;
   }
 
-  virtual void InitializeNewClient(ClientDef & client, ProtocolType & proto)
-  {
-
-  }
+  virtual ClientDef * ConstructClient(void * client_mem, uint32_t connection_id, ProtocolType & proto) = 0;
 
   virtual void CleanupClient(ClientDef & client, ProtocolType & proto)
   {
@@ -67,9 +64,7 @@ protected:
     ClientInfo * slot_ptr = static_cast<ClientInfo *>(m_Clients.AllocateRaw(connection_id));
     
     new (&slot_ptr->m_Protocol) ProtocolType(transmitter);
-    new (&slot_ptr->m_Client) ClientInfo(connection_id, slot_ptr->m_Protocol);
-
-    InitializeNewClient(slot_ptr->m_Client, slot_ptr->m_Protocol);
+    ConstructClient(&slot_ptr->m_Client, connection_id, slot_ptr->m_Protocol);
   }
 
   virtual void ConnectionLost(uint32_t connection_id) override
@@ -81,7 +76,7 @@ protected:
     }
 
     CleanupClient(slot_ptr->m_Client, slot_ptr->m_Protocol);
-    m_Clients.Free(ptr);
+    m_Clients.Free(slot_ptr);
   }
 
   virtual void GotMessage(uint32_t connection_id, NetBitReader & reader) override
@@ -104,5 +99,5 @@ private:
   };
 
   NetServerBackend * m_Backend;
-  StaticSizedArrayAlloc<ClientDef> m_Clients;
+  StaticSizedArrayAlloc<ClientInfo> m_Clients;
 };

@@ -5,30 +5,39 @@
 #include "NetSerializeDelta.h"
 #include "NetDeserializeDelta.h"
 #include "NetStateStore.h"
-#include "NetPipeMode.h"
+#include "NetTransmitter.h"
 
 class NetBitWriter;
 class NetBitReader;
 
-template <class DataClass, class Sink, int DataStoreSize>
+template <class DataClass, int DataStoreSize>
+class NetPipeDeltaStateReceiver;
+
+template <class DataClass, int DataStoreSize>
 class NetPipeDeltaStateSender
 {
 public:
 
-  template <class Source>
-  using ClientType = NetPipeDeltaStateReceiver<DataClass, Source, DataStoreSize>;
+  using ClientType = NetPipeDeltaStateReceiver<DataClass, DataStoreSize>;
 
-  NetPipeDeltaStateSender(Sink && sink) :
-    m_Sink(sink),
+  NetPipeDeltaStateSender() :
     m_LastAckedState(-1),
     m_NextStateSlot(-1)
   {
 
   }
 
+  void Initialize(NetTransmitter * transmitter, NetPipeMode mode, int channel_index, int channel_bits)
+  {
+    m_Transmitter = transmitter;
+    m_Mode = mode;
+    m_ChannelIndex = channel_index;
+    m_ChannelBits = channel_bits;
+  }
+
   void SyncState(const std::shared_ptr<DataClass> & current_state)
   {
-    NetBitWriter & writer = m_Sink.CreateMessage();
+    NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
     DataClass * reference_state = m_LastAckedState != -1 ? m_StateStore.Get(m_LastAckedState) : nullptr;
 
     m_NextStateSlot++;
@@ -36,7 +45,8 @@ public:
 
     m_StateStore.StoreState(current_state, m_NextStateSlot);
 
-    writer->WriteBits(m_NextStateSlot, GetRequiredBits(DataStoreSize - 1));
+    writer.WriteBits(m_NextStateSlot, GetRequiredBits(DataStoreSize - 1));
+    writer.WriteBits(m_LastAckedState != -1 ? m_LastAckedState : DataStoreSize, GetRequiredBits(DataStoreSize - 1));
 
     if (reference_state)
     {
@@ -47,7 +57,7 @@ public:
       NetSerializeValue(*current_state.get(), writer);
     }
 
-    m_Sink.SendMessage(writer);
+    m_Transmitter->SendMessage(writer);
   }
 
   void GotAck(NetBitReader & reader)
@@ -56,7 +66,11 @@ public:
   }
 
 private:
-  Sink m_Sink;
+
+  NetTransmitter * m_Transmitter;
+  NetPipeMode m_Mode;
+  int m_ChannelIndex;
+  int m_ChannelBits;
 
   int m_LastAckedState;
   int m_NextStateSlot;
@@ -64,17 +78,27 @@ private:
 };
 
 
-template <class DataClass, class Source, int DataStoreSize>
+template <class DataClass, int DataStoreSize>
 class NetPipeDeltaStateReceiver
 {
 public:
-  NetPipeDeltaStateReceiver(Source && source) :
-    m_Source(source)
-  {
 
+  void Initialize(NetTransmitter * transmitter, NetPipeMode mode, int channel_index, int channel_bits)
+  {
+    m_Transmitter = transmitter;
+    m_Mode = mode;
+    m_ChannelIndex = channel_index;
+    m_ChannelBits = channel_bits;
   }
 
-  void RegisterUpdateCallback(std::function<void(const DataClass &)> && func)
+  template <typename C>
+  void RegisterCallback(void(C::*func)(const DataClass &), C * c)
+  {
+    auto callback_func = [=](const DataClass & inst) { (c->*func)(inst); };
+    RegisterCallback(callback_func);
+  }
+
+  void RegisterCallback(std::function<void(const DataClass &)> && func)
   {
     m_UpdateCallback = std::move(func);
   }
@@ -82,31 +106,37 @@ public:
   void GotMessage(NetBitReader & reader)
   {
     int state_slot = (int)reader.ReadUBits(GetRequiredBits(DataStoreSize - 1));
+    int ref_slot = (int)reader.ReadUBits(GetRequiredBits(DataStoreSize));
 
-    DataClass * reference_state = m_StateStore.Get();
     std::shared_ptr<DataClass> inst = std::make_shared<DataClass>();
 
-    if (inst)
+    if (ref_slot != DataStoreSize)
     {
-      StormReflCopy(inst.get(), *reference_state);
-      NetDeserializeValueDelta(reference_state, reader);
+      DataClass * reference_state = m_StateStore.Get(ref_slot);
+
+      StormReflCopy(*inst.get(), *reference_state);
+      NetDeserializeValueDelta(*inst.get(), reader);
     }
     else
     {
-      NetDeserializeValue(inst.get(), reader);
+      NetDeserializeValue(*inst.get(), reader);
     }
 
     m_StateStore.StoreState(inst, state_slot);
     m_UpdateCallback(*inst.get());
 
-    NetBitWriter writer = m_Source.CreateAck();
+    NetBitWriter & writer = m_Transmitter->CreateAck(m_Mode, m_ChannelIndex, m_ChannelBits);
     writer.WriteBits(state_slot, GetRequiredBits(DataStoreSize - 1));
 
-    m_Source.SendAck(writer);
+    m_Transmitter->SendAck(writer);
   }
 
 private:
-  Source m_Source;
+
+  NetTransmitter * m_Transmitter;
+  NetPipeMode m_Mode;
+  int m_ChannelIndex;
+  int m_ChannelBits;
 
   std::function<void(const DataClass &)> m_UpdateCallback;
   NetStateStore<DataClass, DataStoreSize> m_StateStore;
@@ -116,23 +146,9 @@ private:
 template <class DataClass, int DataStoreSize, NetPipeMode Mode = NetPipeMode::kReliable>
 struct NetPipeDeltaState
 {
-  template <typename Sink>
-  using SenderType = NetPipeDeltaStateSender<DataClass, Sink, DataStoreSize>;
+  using SenderType = NetPipeDeltaStateSender<DataClass, DataStoreSize>;
 
-  template <typename Source>
-  using ReceiverType = NetPipeDeltaStateReceiver<DataClass, Source, DataStoreSize>;
+  using ReceiverType = NetPipeDeltaStateReceiver<DataClass, DataStoreSize>;
 
   static const NetPipeMode PipeMode = Mode;
-
-  template <typename Sink>
-  auto MakeSender(Sink && sink)
-  {
-    return NetPipeDeltaStateSender<DataClass, Sink, DataStoreSize>(std::forward<Sink>(sink));
-  }
-
-  template <typename Source>
-  auto MakeReceiver(Source && source)
-  {
-    return NetPipeDeltaStateReceiver<DataClass, Source, DataStoreSize>(std::forward<Source>(source));
-  }
 };

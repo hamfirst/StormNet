@@ -2,6 +2,8 @@
 #include "NetBitReaderBuffer.h"
 #include "NetException.h"
 
+#include <string.h>
+
 NetBitReaderBuffer::NetBitReaderBuffer(void * buffer, std::size_t num_bytes)
   : m_Buffer((uint8_t *)buffer), m_Offset(0), m_NumBytes(num_bytes), m_Bit(0)
 {
@@ -17,7 +19,7 @@ uint64_t NetBitReaderBuffer::ReadUBits(int num_bits)
 
   if (m_NumBytes <= 0)
   {
-    NET_THROW(std::out_of_range("NetBitReader requested too much data"));
+    NET_THROW_OR(std::out_of_range("NetBitReader requested too much data"), return 0);
   }
 
   uint64_t mask_bits = (1ULL << num_bits) - 1ULL;
@@ -42,5 +44,20 @@ uint64_t NetBitReaderBuffer::ReadUBits(int num_bits)
 int64_t NetBitReaderBuffer::ReadSBits(int num_bits)
 {
   return SignExtend(ReadUBits(num_bits), num_bits);
+}
+
+void NetBitReaderBuffer::ReadBuffer(void * buffer, std::size_t num_bytes)
+{
+  if (m_Bit == 0 && m_NumBytes >= num_bytes)
+  {
+    memcpy(buffer, m_Buffer, num_bytes);
+    m_Buffer += num_bytes;
+    m_Offset += num_bytes;
+    m_NumBytes -= num_bytes;
+  }
+  else
+  {
+    NetBitReader::ReadBuffer(buffer, num_bytes);
+  }
 }
 

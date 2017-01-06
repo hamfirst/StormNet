@@ -10,6 +10,8 @@ public:
   uint64_t ReadUBits(int num_bits);
   int64_t ReadSBits(int num_bits);
 
+  void ReadBuffer(void * buffer, std::size_t num_bytes);
+
 protected:
   uint8_t * m_Buffer;
   std::size_t m_Offset;

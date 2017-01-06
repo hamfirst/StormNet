@@ -4,7 +4,8 @@
 
 #include <enet/enet.h>
 
-NetClientBackendEnet::NetClientBackendEnet(NetClientInterface * iface, const char * host_addr, uint16_t port)
+NetClientBackendEnet::NetClientBackendEnet(NetClientInterface * iface, const char * host_addr, uint16_t port) :
+  m_Interface(iface)
 {
   m_Host = enet_host_create(nullptr, /* create a client host */
     1,
@@ -27,6 +28,8 @@ NetClientBackendEnet::NetClientBackendEnet(NetClientInterface * iface, const cha
 
 NetClientBackendEnet::~NetClientBackendEnet()
 {
+  enet_peer_disconnect(m_Transmitter.m_Peer, 0);
+  enet_host_flush(m_Host);
   enet_host_destroy(m_Host);
 }
 
@@ -83,6 +86,7 @@ void NetClientBackendEnet::Disconnect()
     return;
   }
 
-  enet_peer_reset(m_Transmitter.m_Peer);
+  enet_peer_disconnect(m_Transmitter.m_Peer, 0);
+  enet_host_flush(m_Host);
   m_Transmitter.m_Disconnected = true;
 }

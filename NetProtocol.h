@@ -3,6 +3,7 @@
 #include "NetProtocolSender.h"
 #include "NetProtocolReceiver.h"
 
+
 template <typename ... MessagePipeTypes>
 class NetProtocolDefinition
 {
@@ -24,8 +25,8 @@ public:
   {
   public:
     SymmetricProtocol(NetTransmitter * transmitter) :
-      m_Senders(transmitter),
-      m_Receivers(transmitter)
+      m_Senders(transmitter, GetRequiredBits(sizeof...(MessagePipeTypes)-1)),
+      m_Receivers(transmitter, GetRequiredBits(sizeof...(MessagePipeTypes)-1))
     {
 
     }
@@ -65,8 +66,8 @@ public:
   {
   public:
     AsymmetricProtocol(NetTransmitter *transmitter) :
-      m_Senders(transmitter),
-      m_Receivers(transmitter)
+      m_Senders(transmitter, GetRequiredBits(sizeof...(MessagePipeTypes)-1)),
+      m_Receivers(transmitter, GetRequiredBits(sizeof...(MessagePipeTypes)-1))
     {
 
     }
@@ -97,7 +98,7 @@ public:
     }
 
   private:
-    NetProtocolSender<MessagePipeTypes...> m_Senders;
+    NetProtocolSender<OppositeMessagePipeTypes...> m_Senders;
     NetProtocolReceiver<MessagePipeTypes...> m_Receivers;
   };
 };
@@ -121,6 +122,6 @@ struct NetProtocolInfo
   using SymmetricProtocolType = decltype(NetCreateSymmetricProtocol(nullptr, LocalProtoDef{}));
 
   template <typename RemoteProtoDef>
-  using AsymmetricProtocolType = decltype(NetCreateAsymmetricProtocol(nullptr, LocalMessagePipeTypes{}, RemoteMessagePipeTypes{}));
+  using AsymmetricProtocolType = decltype(NetCreateAsymmetricProtocol(nullptr, LocalProtoDef{}, RemoteProtoDef{}));
 };
 

@@ -232,7 +232,7 @@ struct NetSerializerDelta<NetArrayList<T, MaxSize>, NetBitWriter>
       writer.WriteBits(1, 1);
       writer.WriteBits(val.size(), required_bits);
 
-      for (auto index = 0; index < val.size(); index++)
+      for (std::size_t index = 0; index < val.size(); index++)
       {
         if (index >= compare.size())
         {
@@ -258,7 +258,7 @@ struct NetSerializerDelta<NetArrayList<T, MaxSize>, NetBitWriter>
     auto begin_cursor = writer.Reserve(1);
     int num_wrote = 0;
 
-    for (auto index = 0; index < val.size(); index++)
+    for (std::size_t index = 0; index < val.size(); index++)
     {
       auto cursor = writer.Reserve(1);
       if (NetSerializeValueDelta(val[index], compare[index], writer))
@@ -317,7 +317,7 @@ struct NetDeserializerDelta<NetArrayList<T, MaxSize>, NetBitReader>
     if (size_change)
     {
       auto new_size = reader.ReadUBits(required_bits);
-      auto min_size = std::min(val.size(), new_size);
+      auto min_size = std::min((int)val.size(), (int)new_size);
 
       for (auto index = 0; index < min_size; index++)
       {
@@ -330,7 +330,7 @@ struct NetDeserializerDelta<NetArrayList<T, MaxSize>, NetBitReader>
 
       for (int64_t index = (int64_t)val.size() - 1; index >= (int64_t)min_size; index--)
       {
-        val.RemoveAt(index);
+        val.RemoveAt((std::size_t)index);
       }
 
       for (auto index = val.size(); index < new_size; index++)
@@ -342,7 +342,7 @@ struct NetDeserializerDelta<NetArrayList<T, MaxSize>, NetBitReader>
       return;
     }
 
-    for (auto index = 0; index < val.size(); index++)
+    for (std::size_t index = 0; index < val.size(); index++)
     {
       auto val_changed = reader.ReadUBits(1);
       if (val_changed)

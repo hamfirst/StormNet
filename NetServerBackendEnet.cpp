@@ -86,6 +86,6 @@ void NetServerBackendEnet::ForceDisconnect(uint32_t connection_id)
     return;
   }
 
-  enet_peer_reset(trans->m_Peer);
+  enet_peer_disconnect(trans->m_Peer, 0);
   trans->m_Disconnected = true;
 }

@@ -16,6 +16,8 @@ public:
   void WriteBits(NetBitWriterCursor & cursor, uint64_t val, int num_bits);
   void WriteSBits(NetBitWriterCursor & cursor, int64_t val, int num_bits);
 
+  void WriteBuffer(void * data, std::size_t num_bytes);
+
   void * GetData() { return m_Buffer.data(); }
   std::size_t GetDataSize() { return m_Buffer.size(); }
 

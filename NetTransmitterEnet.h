@@ -11,7 +11,7 @@ struct NetTransmitterEnet : public NetTransmitter
   NetTransmitterEnet();
 
   NetBitWriter & CreateWriter(NetPipeMode mode) override;
-  void SendMessage(NetBitWriter & writer) override;
+  void SendWriter(NetBitWriter & writer) override;
 
 public:
   NetBitWriterVector m_Writer = NetBitWriterVector(1400);

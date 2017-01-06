@@ -14,6 +14,8 @@ public:
   virtual void WriteBits(NetBitWriterCursor & cursor, uint64_t val, int num_bits) = 0;
   virtual void WriteSBits(NetBitWriterCursor & cursor, int64_t val, int num_bits) = 0;
 
+  virtual void WriteBuffer(void * data, std::size_t num_bytes);
+
   virtual NetBitWriterCursor Reserve(int num_bits) = 0;
   virtual void RollBack(NetBitWriterCursor & cursor) = 0;
 };

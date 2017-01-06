@@ -9,8 +9,7 @@
 class NetBitWriter;
 class NetBitReader;
 
-template <class DataClass>
-class NetPipeFullStateSender
+class NetPipeBufferSender
 {
 public:
 
@@ -22,10 +21,11 @@ public:
     m_ChannelBits = channel_bits;
   }
 
-  void SyncState(const DataClass & state)
+  void SendData(void * data, std::size_t size)
   {
     NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
-    NetSerializeValue(state, writer);
+    writer.WriteBits(size, 32);
+    writer.WriteBuffer(data, size);
     m_Transmitter->SendMessage(writer);
   }
 
@@ -35,14 +35,14 @@ public:
   }
 
 private:
+
   NetTransmitter * m_Transmitter;
   NetPipeMode m_Mode;
   int m_ChannelIndex;
   int m_ChannelBits;
 };
 
-template <class DataClass>
-class NetPipeFullStateReciever
+class NetPipeBufferReciever
 {
 public:
   void Initialize(NetTransmitter * transmitter, NetPipeMode mode, int channel_index, int channel_bits)
@@ -51,39 +51,42 @@ public:
   }
 
   template <typename C>
-  void RegisterCallback(void(C::*func)(DataClass &&), C * c)
+  void RegisterCallback(void(C::*func)(void *, std::size_t), C * c)
   {
-    auto callback_func = [=](DataClass && inst) { (c->*func)(std::move(inst)); };
+    auto callback_func = [=](void * data, std::size_t size) { (c->*func)(data, size); };
     RegisterCallback(callback_func);
   }
 
-  void RegisterCallback(std::function<void(DataClass &&)> && func)
+  void RegisterCallback(std::function<void(void *, std::size_t)> && func)
   {
     m_UpdateCallback = std::move(func);
   }
 
   void GotMessage(NetBitReader & reader)
   {
-    DataClass inst = {};
-    NetDeserializeValue(inst, reader);
+    std::size_t size = (std::size_t)reader.ReadUBits(32);
+
+    std::unique_ptr<uint8_t[]> buffer = std::make_unique<uint8_t[]>(size);
+    reader.ReadBuffer(buffer.get(), size);
 
     if (m_UpdateCallback)
     {
-      m_UpdateCallback(std::move(inst));
+      m_UpdateCallback(buffer.get(), size);
     }
   }
 
 private:
 
-  std::function<void(DataClass &&)> m_UpdateCallback;
+  std::function<void(void *, std::size_t)> m_UpdateCallback;
 };
 
 
-template <class DataClass, NetPipeMode Mode = NetPipeMode::kReliable>
-struct NetPipeFullState
+template <NetPipeMode Mode = NetPipeMode::kReliable>
+struct NetPipeBuffer
 {
-  using SenderType = NetPipeFullStateSender<DataClass>;
-  using ReceiverType = NetPipeFullStateReciever<DataClass>;
+  using SenderType = NetPipeBufferSender;
+
+  using ReceiverType = NetPipeBufferReciever;
 
   static const NetPipeMode PipeMode = Mode;
 };

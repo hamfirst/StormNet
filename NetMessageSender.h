@@ -4,18 +4,20 @@
 
 #include "NetBitWriter.h"
 #include "NetSerialize.h"
-#include "NetPipeSink.h"
+#include "NetTransmitter.h"
 
-template <class BaseClass, class Sink>
+template <class BaseClass>
 class NetPipeMessageSender;
 
 template <typename BaseClass>
 class NetMessageSender
 {
 public:
-  template <class Sink>
-  NetMessageSender(NetPipeMessageSender<BaseClass, Sink> & pipe) :
-    m_Sink(&pipe.m_Sink)
+  NetMessageSender(NetPipeMessageSender<BaseClass> & pipe) :
+    m_Transmitter(pipe.m_Transmitter),
+    m_Mode(pipe.m_Mode),
+    m_ChannelIndex(pipe.m_ChannelIndex),
+    m_ChannelBits(pipe.m_ChannelBits)
   {
 
   }
@@ -33,17 +35,20 @@ public:
     auto & type_db = BaseClass::__s_TypeDatabase;
     auto class_id = type_db.GetClassId<DataType>();
 
-    NetBitWriter & writer = m_Sink->CreateMessage();
+    NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
 
     writer.WriteBits(class_id, GetRequiredBits(type_db.GetNumTypes() - 1));
     NetSerializeValue(data, writer);
 
-    m_Sink->SendMessage(writer);
+    m_Transmitter->SendMessage(writer);
   }
 
 private:
 
-  NetPipeSink * m_Sink;
+  NetTransmitter * m_Transmitter;
+  NetPipeMode m_Mode;
+  int m_ChannelIndex;
+  int m_ChannelBits;
 };
 
 

@@ -17,7 +17,7 @@ public:
     return m_Store[index].get();
   }
 
-  const DataInst * Get(int index)
+  const DataInst * Get(int index) const
   {
     return m_Store[index].get();
   }
