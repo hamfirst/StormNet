@@ -82,7 +82,7 @@ public:
     if (logical_index == m_Values.size())
     {
       m_Values.push_back(val);
-      return;
+      return m_Values.back();
     }
 
     m_Values.insert(m_Values.begin() + logical_index, val);
@@ -100,7 +100,7 @@ public:
     if (logical_index == m_Values.size())
     {
       m_Values.emplace_back(std::forward<Args>(args)...);
-      return;
+      return m_Values.back();
     }
 
     m_Values.emplace(m_Values.begin() + logical_index, std::forward<Args>(args)...);

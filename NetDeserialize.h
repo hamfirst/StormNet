@@ -8,6 +8,9 @@
 
 #include "NetReflectionCommon.h"
 
+template <typename Type, class NetBitReader>
+struct NetDeserializer;
+
 template <class Type, class NetBitReader>
 void NetDeserializeValue(Type & t, NetBitReader & reader)
 {

@@ -8,6 +8,9 @@
 
 #include "NetReflectionCommon.h"
 
+template <typename Type, class NetBitWriter>
+struct NetSerializer;
+
 template <class Type, class NetBitWriter>
 void NetSerializeValue(const Type & t, NetBitWriter & writer)
 {

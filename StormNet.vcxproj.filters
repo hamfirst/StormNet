@@ -4,8 +4,6 @@
     <ClInclude Include="NetBitWriter.h" />
     <ClInclude Include="NetBitReader.h" />
     <ClInclude Include="NetBitUtil.h" />
-    <ClInclude Include="NetDeserialize.h" />
-    <ClInclude Include="NetDeserializeDelta.h" />
     <ClInclude Include="NetException.h" />
     <ClInclude Include="NetBindings.h" />
     <ClInclude Include="NetBindingHelpers.h" />
@@ -100,6 +98,12 @@
     <ClInclude Include="NetTransmitterNull.h" />
     <ClInclude Include="NetPipeDeltaStateReliable.h">
       <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetDeserialize.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetDeserializeDelta.h">
+      <Filter>Reflection</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

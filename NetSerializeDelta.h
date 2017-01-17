@@ -3,6 +3,9 @@
 #include "NetSerialize.h"
 
 template <typename Type, class NetBitWriter>
+struct NetSerializerDelta;
+
+template <typename Type, class NetBitWriter>
 bool NetSerializeValueDelta(const Type & val, const Type & compare, NetBitWriter & writer)
 {
   NetSerializerDelta<Type, NetBitWriter> s;

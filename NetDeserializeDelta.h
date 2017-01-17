@@ -3,6 +3,9 @@
 #include "NetDeserialize.h"
 
 template <typename Type, class NetBitReader>
+struct NetDeserializerDelta;
+
+template <typename Type, class NetBitReader>
 void NetDeserializeValueDelta(Type & val, NetBitReader & reader)
 {
   NetDeserializerDelta<Type, NetBitReader> s;
