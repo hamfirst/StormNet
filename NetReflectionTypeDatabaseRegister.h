@@ -4,6 +4,10 @@
 
 #include <StormRefl/StormReflMetaInfoBase.h>
 
+#include "NetSerialize.h"
+#include "NetSerializeDelta.h"
+#include "NetDeserialize.h"
+#include "NetDeserializeDelta.h"
 #include "NetReflectionTypeDatabase.h"
 
 template <typename RegType>

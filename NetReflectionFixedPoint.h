@@ -13,7 +13,7 @@
 
 inline int64_t FixedPointMultiplyWide(int64_t a, int64_t b, int FractionalBits)
 {
-#if !defined(WIN32) && !defined(STORM_REFL_PARSE)
+#if !defined(WIN32) && !defined(_LINUX) && !defined(STORM_REFL_PARSE)
   int64_t hi;
   int64_t result = _mul128(a, b, &hi);
 

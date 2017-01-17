@@ -33,7 +33,7 @@ public:
   void SendMessage(const DataType & data)
   {
     auto & type_db = BaseClass::__s_TypeDatabase;
-    auto class_id = type_db.GetClassId<DataType>();
+    auto class_id = type_db.template GetClassId<DataType>();
 
     NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
 
