@@ -30,7 +30,7 @@ public:
     static_assert(std::is_base_of<BaseClass, DataType>::value, "Must send a data type that derives from the base type");
 
     auto & type_db = BaseClass::__s_TypeDatabase;
-    auto class_id = type_db.GetClassId<DataType>();
+    auto class_id = type_db.template GetClassId<DataType>();
 
     NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
 
@@ -47,7 +47,7 @@ public:
 
 private:
 
-  template <typename BaseClass>
+  template <typename SenderBaseClass>
   friend class NetMessageSender;
 
   NetTransmitter * m_Transmitter;
@@ -120,7 +120,7 @@ protected:
   void RegisterCallbackInteral(CallbackType & callback)
   {
     auto & type_db = BaseClass::__s_TypeDatabase;
-    auto class_id = type_db.GetClassId<DataType>();
+    auto class_id = type_db.template GetClassId<DataType>();
 
     auto deserialize_cb = [=](NetBitReader & reader)
     {
