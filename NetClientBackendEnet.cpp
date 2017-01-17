@@ -42,18 +42,10 @@ void NetClientBackendEnet::Update()
     switch (e.type)
     {
     case ENET_EVENT_TYPE_CONNECT:
-      printf("Client connected to %x:%u.\n",
-        e.peer->address.host,
-        e.peer->address.port);
-
       m_Connected = true;
       m_Interface->GotConnection(&m_Transmitter);
       break;
     case ENET_EVENT_TYPE_RECEIVE:
-      printf("A client packet of length %zu was received on channel %u.\n",
-        e.packet->dataLength,
-        e.channelID);
-
       if (m_Transmitter.m_Disconnected == false)
       {
         NetBitReaderBuffer reader(e.packet->data, e.packet->dataLength);
@@ -64,9 +56,6 @@ void NetClientBackendEnet::Update()
       break;
 
     case ENET_EVENT_TYPE_DISCONNECT:
-
-      printf("Client disconnected.\n");
-
       if (m_Connected)
       {
         m_Interface->ConnectionFailed();

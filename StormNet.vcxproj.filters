@@ -96,7 +96,11 @@
       <Filter>Pipes</Filter>
     </ClInclude>
     <ClInclude Include="NetTransmitterReplayStream.h" />
-    <ClInclude Include="NetTransmitterReplayStreamWriter.h" />
+    <ClInclude Include="NetReplayStreamReader.h" />
+    <ClInclude Include="NetTransmitterNull.h" />
+    <ClInclude Include="NetPipeDeltaStateReliable.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />
@@ -110,7 +114,7 @@
     <ClCompile Include="NetBitWriter.cpp" />
     <ClCompile Include="NetTransmitter.cpp" />
     <ClCompile Include="NetTransmitterReplayStream.cpp" />
-    <ClCompile Include="NetTransmitterReplayStreamWriter.cpp" />
+    <ClCompile Include="NetTransmitterNull.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Reflection">

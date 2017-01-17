@@ -123,7 +123,11 @@ public:
     }
 
     m_StateStore.StoreState(inst, state_slot);
-    m_UpdateCallback(*inst.get());
+
+    if (m_UpdateCallback)
+    {
+      m_UpdateCallback(*inst.get());
+    }
 
     NetBitWriter & writer = m_Transmitter->CreateAck(m_Mode, m_ChannelIndex, m_ChannelBits);
     writer.WriteBits(state_slot, GetRequiredBits(DataStoreSize - 1));

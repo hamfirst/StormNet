@@ -237,6 +237,7 @@
     <ClInclude Include="NetMetaUtil.h" />
     <ClInclude Include="NetPipeBuffer.h" />
     <ClInclude Include="NetPipeDeltaState.h" />
+    <ClInclude Include="NetPipeDeltaStateReliable.h" />
     <ClInclude Include="NetPipeFullState.h" />
     <ClInclude Include="NetPipeMessage.h" />
     <ClInclude Include="NetPipeMode.h" />
@@ -257,6 +258,7 @@
     <ClInclude Include="NetReflectionStruct.h" />
     <ClInclude Include="NetReflectionTypeDatabase.h" />
     <ClInclude Include="NetReflectionTypeDatabaseRegister.h" />
+    <ClInclude Include="NetReplayStreamReader.h" />
     <ClInclude Include="NetSerialize.h" />
     <ClInclude Include="NetSerializeDelta.h" />
     <ClInclude Include="NetServer.h" />
@@ -265,11 +267,11 @@
     <ClInclude Include="NetStateStore.h" />
     <ClInclude Include="NetTransmitter.h" />
     <ClInclude Include="NetTransmitterMemory.h" />
-    <ClInclude Include="NetTransmitterReplayStream.h">
+    <ClInclude Include="NetTransmitterNull.h">
       <SubType>
       </SubType>
     </ClInclude>
-    <ClInclude Include="NetTransmitterReplayStreamWriter.h">
+    <ClInclude Include="NetTransmitterReplayStream.h">
       <SubType>
       </SubType>
     </ClInclude>
@@ -286,11 +288,11 @@
     <ClCompile Include="NetReflectionTypeDatabase.cpp" />
     <ClCompile Include="NetTransmitter.cpp" />
     <ClCompile Include="NetTransmitterMemory.cpp" />
-    <ClCompile Include="NetTransmitterReplayStream.cpp">
+    <ClCompile Include="NetTransmitterNull.cpp">
       <SubType>
       </SubType>
     </ClCompile>
-    <ClCompile Include="NetTransmitterReplayStreamWriter.cpp">
+    <ClCompile Include="NetTransmitterReplayStream.cpp">
       <SubType>
       </SubType>
     </ClCompile>
