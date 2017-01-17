@@ -2,6 +2,8 @@
 #include "NetClientBackendEnet.h"
 #include "NetBitReaderBuffer.h"
 
+#include <stdexcept>
+
 #include <enet/enet.h>
 
 NetClientBackendEnet::NetClientBackendEnet(NetClientInterface * iface, const char * host_addr, uint16_t port) :
