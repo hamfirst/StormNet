@@ -21,7 +21,7 @@ public:
     auto initializer = [&](auto & ... elems)
     {
       int channel_index = 0;
-      InitSender(channel_index, mode_ptr, transmitter, elems...);
+      this->InitSender(channel_index, mode_ptr, transmitter, elems...);
     };
 
     NetMetaUtil::Apply(initializer, m_Senders);
@@ -40,7 +40,7 @@ public:
     auto visitor = [&](auto & ... elems)
     {
       int channel_index = 0;
-      ProcessAck(channel_index, target_channel, reader, elems...);
+      this->ProcessAck(channel_index, target_channel, reader, elems...);
     };
 
     NetMetaUtil::Apply(visitor, m_Senders);

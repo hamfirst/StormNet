@@ -17,7 +17,7 @@ public:
     auto initializer = [&](auto & ... elems)
     {
       int channel_index = 0;
-      InitReceiver(channel_index, transmitter, channel_bits, elems...);
+      this->InitReceiver(channel_index, transmitter, channel_bits, elems...);
     };
 
     NetMetaUtil::Apply(initializer, m_Receivers);
@@ -36,7 +36,7 @@ public:
     auto visitor = [&](auto & ... elems)
     {
       int channel_index = 0;
-      ProcessMessage(channel_index, target_channel, reader, elems...);
+      this->ProcessMessage(channel_index, target_channel, reader, elems...);
     };
 
     NetMetaUtil::Apply(visitor, m_Receivers);
