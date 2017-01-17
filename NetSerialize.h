@@ -1,6 +1,6 @@
 #pragma once
 
-#include <StormRefl\StormReflMetaFuncs.h>
+#include <StormRefl/StormReflMetaFuncs.h>
 
 #include "NetBitReader.h"
 #include "NetBitWriter.h"
