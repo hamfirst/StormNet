@@ -3,6 +3,7 @@
 #include "NetException.h"
 
 #include <algorithm>
+#include <cstring>
 
 NetBitWriterVector::NetBitWriterVector(int reserve_bytes) : 
   m_Bit(8)
