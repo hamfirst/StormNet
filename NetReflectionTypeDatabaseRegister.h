@@ -146,7 +146,7 @@ struct NetRegisterAllTypes
     { \
       NetRegisterAllTypes<StormReflFileInfo::FileName> reg; \
     } \
-  }; _s_reg_##FileName _s_reg_##FileName_Inst; \
+  }; static _s_reg_##FileName _s_reg_##FileName_Inst; \
 
 #define NET_BASE_TYPE(BaseType) \
   NetTypeDatabase BaseType::__s_TypeDatabase; 
