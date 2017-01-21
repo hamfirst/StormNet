@@ -26,7 +26,7 @@ void NetSerializeType(const Type & val, NetBitWriter & writer)
 
   while (mem_ptr != end_ptr)
   {
-    writer.WriteBits((uint64_t)*mem_ptr, 8);
+    writer.WriteBits((uint64_t)(*mem_ptr & 0xFF), 8);
     mem_ptr++;
   }
 }

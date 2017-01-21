@@ -7,6 +7,11 @@
 #include "NetStateStore.h"
 #include "NetTransmitter.h"
 
+#ifdef _DEBUG
+#include "NetBitWriterVector.h"
+#include "NetBitReaderBuffer.h"
+#endif
+
 class NetBitWriter;
 class NetBitReader;
 
@@ -51,6 +56,27 @@ public:
     if (reference_state)
     {
       NetSerializeValueDelta(*current_state.get(), *reference_state, writer);
+
+#ifdef _DEBUG
+      NetBitWriterVector test_writer;
+      NetSerializeValueDelta(*current_state.get(), *reference_state, test_writer);
+
+      DataClass copy = *reference_state;
+      NetBitReaderBuffer reader(test_writer.GetData(), test_writer.GetDataSize());
+      NetDeserializeValueDelta(copy, reader);
+
+      if (StormReflCompare(*current_state.get(), copy) == false)
+      {
+        NetBitWriterVector test_writer;
+        NetSerializeValueDelta(*current_state.get(), *reference_state, test_writer);
+
+        DataClass copy = *reference_state;
+        NetBitReaderBuffer reader(test_writer.GetData(), test_writer.GetDataSize());
+        NetDeserializeValueDelta(copy, reader);
+
+        return;
+      }
+#endif
     }
     else
     {

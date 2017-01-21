@@ -18,6 +18,21 @@ void NetBitWriterVector::WriteBits(uint64_t val, int num_bits)
     return;
   }
 
+
+#ifdef _DEBUG
+
+  if (num_bits < 64)
+  {
+    uint64_t too_large_val = (1ULL << num_bits);
+    if (val >= too_large_val)
+    {
+      NET_THROW(std::out_of_range("Not enough bits to contain the entire value"));
+      return;
+    }
+  }
+
+#endif
+
   uint64_t free_bits = 8 - m_Bit;
   if (free_bits == 0)
   {
@@ -39,7 +54,21 @@ void NetBitWriterVector::WriteBits(uint64_t val, int num_bits)
 
 void NetBitWriterVector::WriteSBits(int64_t val, int num_bits)
 {
+#ifdef _DEBUG
+  uint64_t mask = (1 << num_bits) - 1;
+  int64_t min_value = 0xFFFFFFFFFFFFFFFF ^ mask;
+  int64_t max_value = ~min_value;
+
+  if (val < min_value || val > max_value)
+  {
+    NET_THROW(std::out_of_range("Not enough bits to contain the entire value"));
+    return;
+  }
+
+  WriteBits((uint64_t)val & mask, num_bits);
+#else
   WriteBits((uint64_t)val, num_bits);
+#endif
 }
 
 void NetBitWriterVector::WriteBits(NetBitWriterCursor & cursor, uint64_t val, int num_bits)
@@ -48,6 +77,20 @@ void NetBitWriterVector::WriteBits(NetBitWriterCursor & cursor, uint64_t val, in
   {
     return;
   }
+
+#ifdef _DEBUG
+
+  if (num_bits < 64)
+  {
+    uint64_t too_large_val = (1ULL << num_bits);
+    if (val >= too_large_val)
+    {
+      NET_THROW(std::out_of_range("Not enough bits to contain the entire value"));
+      return;
+    }
+  }
+
+#endif
 
   if (num_bits > (int)cursor.m_Size)
   {
@@ -94,7 +137,21 @@ void NetBitWriterVector::WriteBits(NetBitWriterCursor & cursor, uint64_t val, in
 
 void NetBitWriterVector::WriteSBits(NetBitWriterCursor & cursor, int64_t val, int num_bits)
 {
-  WriteBits(cursor, (uint64_t)val, num_bits);
+#ifdef _DEBUG
+  uint64_t mask = (1 << num_bits) - 1;
+  int64_t min_value = 0xFFFFFFFFFFFFFFFF ^ mask;
+  int64_t max_value = ~min_value;
+
+  if (val < min_value || val > max_value)
+  {
+    NET_THROW(std::out_of_range("Not enough bits to contain the entire value"));
+    return;
+  }
+
+  WriteBits(cursor, (uint64_t)val & mask, num_bits);
+#else
+  WriteBits(cursor, val, num_bits);
+#endif
 }
 
 
