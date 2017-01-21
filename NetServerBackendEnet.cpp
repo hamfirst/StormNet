@@ -51,10 +51,6 @@ void NetServerBackendEnet::Update()
       break;
     case ENET_EVENT_TYPE_RECEIVE:
       trans = (NetTransmitterEnet *)e.peer->data;
-      printf("A packet of length %zu was received from %d on channel %u.\n",
-        e.packet->dataLength,
-        (uint32_t)trans->m_ConnectionId,
-        e.channelID);
 
       if (trans->m_Disconnected == false)
       {
