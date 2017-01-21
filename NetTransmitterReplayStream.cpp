@@ -103,7 +103,7 @@ void NetTransmitterReplayStream::WriteData(uint8_t * ptr, std::size_t size)
     if (space_avail >= size)
     {
       memcpy(&m_CurrentBlock->m_Buffer[m_CurrentOffset], ptr, size);
-      m_CurrentOffset += size;
+      m_CurrentOffset += (int)size;
       break;
     }
     else

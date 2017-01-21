@@ -175,17 +175,17 @@ struct NetSerializer<NetPolymorphic<T>, NetBitWriter>
 template <typename Type, class NetBitWriter>
 struct NetSerializerDelta<NetPolymorphic<Type>, NetBitWriter>
 {
-  bool operator()(const NetPolymorphic<Type> & val, const NetPolymorphic<Type> & compare, NetBitWriter & writer)
+  bool operator()(const NetPolymorphic<Type> & to, const NetPolymorphic<Type> & from, NetBitWriter & writer)
   {
-    if (val.GetClassId() != compare.GetClassId())
+    if (to.GetClassId() != from.GetClassId())
     {
       writer.WriteBits(1, 1);
-      NetSerializeValue(val, writer);
+      NetSerializeValue(to, writer);
       return true;
     }
 
     auto cursor = writer.Reserve(1);
-    if (val.GetTypeInfo().m_SerializeDelta(*val, *compare, writer))
+    if (to.GetTypeInfo().m_SerializeDelta(*to, *from, writer))
     {
       cursor.WriteBits(0, 1);
       return true;

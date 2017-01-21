@@ -173,19 +173,19 @@ struct NetSerializer<NetMap<K, T, MaxSize>, NetBitWriter>
 template <typename K, typename T, std::size_t MaxSize, class NetBitWriter>
 struct NetSerializerDelta<NetMap<K, T, MaxSize>, NetBitWriter>
 {
-  bool operator()(const NetMap<K, T, MaxSize > & val, const NetMap<K, T, MaxSize> & compare, NetBitWriter & writer)
+  bool operator()(const NetMap<K, T, MaxSize > & to, const NetMap<K, T, MaxSize> & from, NetBitWriter & writer)
   {
-    auto itr = val.begin();
-    auto other_itr = compare.begin();
+    auto itr = to.begin();
+    auto other_itr = from.begin();
 
     int required_bits = GetRequiredBits(MaxSize);
     int num_wrote = 0; 
 
     auto size_cursor = writer.Reserve(required_bits);
 
-    while (itr != val.end())
+    while (itr != to.end())
     {
-      while (other_itr != compare.end() && other_itr->first < itr->first)
+      while (other_itr != from.end() && other_itr->first < itr->first)
       {
         writer.WriteBits(other_itr->first, required_bits);
         writer.WriteBits(0, 1);
@@ -194,7 +194,7 @@ struct NetSerializerDelta<NetMap<K, T, MaxSize>, NetBitWriter>
         num_wrote++;
       }
 
-      while (itr != val.end() && other_itr != compare.end() && other_itr->first == itr->first)
+      while (itr != to.end() && other_itr != from.end() && other_itr->first == itr->first)
       {
         auto index_cursor = writer.Reserve(required_bits + 1);
         if (NetSerializeValueDelta(itr->second, other_itr->second, writer))
@@ -212,7 +212,7 @@ struct NetSerializerDelta<NetMap<K, T, MaxSize>, NetBitWriter>
         ++other_itr;
       }
 
-      while (itr != val.end() && (other_itr == compare.end() || itr->first < other_itr->first))
+      while (itr != to.end() && (other_itr == from.end() || itr->first < other_itr->first))
       {
         writer.WriteBits(itr->first, required_bits);
         NetSerializeValue(itr->second, writer);
@@ -222,7 +222,7 @@ struct NetSerializerDelta<NetMap<K, T, MaxSize>, NetBitWriter>
       }
     }
 
-    while (other_itr != compare.end())
+    while (other_itr != from.end())
     {
       writer.WriteBits(other_itr->first, required_bits);
       writer.WriteBits(0, 1);

@@ -10,6 +10,7 @@
 
 class NetBitWriter;
 class NetBitReader;
+class NetTransmitter;
 
 template <class BaseClass>
 class NetPipeMessageSender

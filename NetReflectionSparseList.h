@@ -37,7 +37,7 @@ public:
 
     while (itr1 != last)
     {
-      if ((*itr1).first == (*itr2).first && (*itr1).second == (*itr2).second)
+      if ((*itr1).first == (*itr2).first && StormReflCompare((*itr1).second, (*itr2).second))
       {
         ++itr1;
         ++itr2;
@@ -130,7 +130,7 @@ public:
 
   private:
 
-    NetSparseListIteratorConst(const NetSparseList<T, MaxSize> * list, std::size_t physical_index) : m_List(list), m_PhysicalIndex(physical_index) { }
+    NetSparseListIteratorConst(const NetSparseList<T, MaxSize> * list, std::size_t physical_index) : m_List(list), m_PhysicalIndex((int)physical_index) { }
 
     int m_PhysicalIndex = 0;
     const NetSparseList<T, MaxSize> * m_List;
@@ -166,7 +166,7 @@ public:
       NET_THROW(std::runtime_error("NetSparseList overflow"));
     }
 
-    m_HighestIndex = m_Values.size();
+    m_HighestIndex = (int)m_Values.size();
     m_Values.emplace_back(val);
   }
 
@@ -337,32 +337,32 @@ struct NetSerializer<NetSparseList<T, MaxSize>, NetBitWriter>
 template <typename T, std::size_t MaxSize, class NetBitWriter>
 struct NetSerializerDelta<NetSparseList<T, MaxSize>, NetBitWriter>
 {
-  bool operator()(const NetSparseList<T, MaxSize> & val, const NetSparseList<T, MaxSize> & compare, NetBitWriter & writer)
+  bool operator()(const NetSparseList<T, MaxSize> & to, const NetSparseList<T, MaxSize> & from, NetBitWriter & writer)
   {
     auto begin_cursor = writer.Reserve(1);
-    bool size_change = (val.HighestIndex() != compare.HighestIndex());
+    bool size_change = (to.HighestIndex() != from.HighestIndex());
     if (size_change)
     {
       begin_cursor.WriteBits(1, 1);
-      writer.WriteBits(val.HighestIndex(), GetRequiredBits(MaxSize));
+      writer.WriteBits(to.HighestIndex(), GetRequiredBits(MaxSize));
     }
 
     int num_wrote = 0;
-    int required_bits = GetRequiredBits(val.HighestIndex());
+    int required_bits = GetRequiredBits(to.HighestIndex());
 
     auto size_cursor = writer.Reserve(required_bits);
 
-    for (std::size_t index = 0; index < val.Size(); index++)
+    for (std::size_t index = 0; index < to.Size(); index++)
     {
       auto index_cursor = writer.Reserve(required_bits);
 
-      if (val.HasElementAt(index) && compare.HasElementAt(index) == false)
+      if (to.HasElementAt(index) && from.HasElementAt(index) == false)
       {
         index_cursor.WriteBits(index, required_bits);
-        NetSerializeValue(val[index], writer);
+        NetSerializeValue(to[index], writer);
         num_wrote++;
       }
-      else if (val.HasElementAt(index) == false && compare.HasElementAt(index))
+      else if (to.HasElementAt(index) == false && from.HasElementAt(index))
       {
         index_cursor.WriteBits(index, required_bits);
         writer.WriteBits(0, 1);
@@ -371,7 +371,7 @@ struct NetSerializerDelta<NetSparseList<T, MaxSize>, NetBitWriter>
       else
       {
         auto new_elem_cursor = writer.Reserve(1);
-        if (val.HasElementAt(index) == false || NetSerializeValueDelta(val[index], compare[index], writer) == false)
+        if (to.HasElementAt(index) == false || NetSerializeValueDelta(to[index], from[index], writer) == false)
         {
           writer.RollBack(index_cursor);
         }

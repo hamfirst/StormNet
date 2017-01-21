@@ -6,10 +6,10 @@ template <typename Type, class NetBitWriter>
 struct NetSerializerDelta;
 
 template <typename Type, class NetBitWriter>
-bool NetSerializeValueDelta(const Type & val, const Type & compare, NetBitWriter & writer)
+bool NetSerializeValueDelta(const Type & to, const Type & from, NetBitWriter & writer)
 {
   NetSerializerDelta<Type, NetBitWriter> s;
-  return s(val, compare, writer);
+  return s(to, from, writer);
 }
 
 template <typename Type, class NetBitWriter>
@@ -49,27 +49,27 @@ private:
 };
 
 template <class Type, class NetBitWriter, std::enable_if_t<StormReflCheckReflectable<Type>::value == false && std::is_standard_layout<Type>::value> * enable = nullptr>
-bool NetSerializeDeltaType(const Type & val, const Type & compare, NetBitWriter & writer)
+bool NetSerializeDeltaType(const Type & to, const Type & from, NetBitWriter & writer)
 {
-  if (val == compare)
+  if (to == from)
   {
     return false;
   }
 
-  NetSerializeValue(val, writer);
+  NetSerializeValue(to, writer);
   return true;
 }
 
 template <class Type, class NetBitWriter, std::enable_if_t<StormReflCheckReflectable<Type>::value> * enable = nullptr>
-bool NetSerializeDeltaType(const Type & val, const Type & compare, NetBitWriter & writer)
+bool NetSerializeDeltaType(const Type & to, const Type & from, NetBitWriter & writer)
 {
   int num_wrote = 0;
 
   auto required_bits = GetRequiredBits(StormReflGetFieldCount<Type>());
   auto cursor = writer.Reserve(required_bits);
 
-  NetMemberSerializeDeltaVisitor<Type, NetBitWriter> serializer(compare, writer, num_wrote);
-  StormReflVisitEach(val, serializer);
+  NetMemberSerializeDeltaVisitor<Type, NetBitWriter> serializer(from, writer, num_wrote);
+  StormReflVisitEach(to, serializer);
 
   if (num_wrote > 0)
   {
@@ -84,28 +84,28 @@ bool NetSerializeDeltaType(const Type & val, const Type & compare, NetBitWriter 
 template <typename Type, class NetBitWriter>
 struct NetSerializerDelta
 {
-  bool operator()(const Type & val, const Type & compare, NetBitWriter & writer)
+  bool operator()(const Type & to, const Type & from, NetBitWriter & writer)
   {
-    return NetSerializeDeltaType(val, compare, writer);
+    return NetSerializeDeltaType(to, from, writer);
   }
 };
 
 template <typename Type, class NetBitWriter, int Size>
 struct NetSerializerDelta<Type[Size], NetBitWriter>
 {
-  bool operator()(const Type * val, const Type * compare, NetBitWriter & writer)
+  bool operator()(const Type * to, const Type * from, NetBitWriter & writer)
   {
     auto cursor = writer.Reserve(0);
     int num_differ = 0;
 
     for (auto index = 0; index < Size; index++)
     {
-      if (val[index] != compare[index])
+      if (to[index] != from[index])
       {
         num_differ++;
       }
 
-      NetSerializeValue(val[index], writer);
+      NetSerializeValue(to[index], writer);
     }
 
     if (num_differ == 0)
@@ -121,14 +121,14 @@ struct NetSerializerDelta<Type[Size], NetBitWriter>
 template <class NetBitWriter>
 struct NetSerializerDelta<std::string, NetBitWriter>
 {
-  bool operator()(const std::string & val, const std::string & compare, NetBitWriter & writer)
+  bool operator()(const std::string & to, const std::string & from, NetBitWriter & writer)
   {
-    if (val == compare)
+    if (to == from)
     {
       return false;
     }
 
-    NetSerializeValue(val, writer);
+    NetSerializeValue(to, writer);
     return true;
   }
 };

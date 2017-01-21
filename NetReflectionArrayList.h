@@ -37,7 +37,7 @@ public:
 
     while (itr1 != last)
     {
-      if (*itr1 == *itr2)
+      if (StormReflCompare(*itr1, *itr2))
       {
         ++itr1;
         ++itr2;
@@ -223,25 +223,25 @@ struct NetSerializer<NetArrayList<T, MaxSize>, NetBitWriter>
 template <typename T, std::size_t MaxSize, class NetBitWriter>
 struct NetSerializerDelta<NetArrayList<T, MaxSize>, NetBitWriter>
 {
-  bool operator()(const NetArrayList<T, MaxSize> & val, const NetArrayList<T, MaxSize> & compare, NetBitWriter & writer)
+  bool operator()(const NetArrayList<T, MaxSize> & to, const NetArrayList<T, MaxSize> & from, NetBitWriter & writer)
   {
     auto required_bits = GetRequiredBits(MaxSize);
 
-    if (val.size() != compare.size())
+    if (to.size() != from.size())
     {
       writer.WriteBits(1, 1);
-      writer.WriteBits(val.size(), required_bits);
+      writer.WriteBits(to.size(), required_bits);
 
-      for (std::size_t index = 0; index < val.size(); index++)
+      for (std::size_t index = 0; index < to.size(); index++)
       {
-        if (index >= compare.size())
+        if (index >= from.size())
         {
-          NetSerializeValue(val[index], writer);
+          NetSerializeValue(to[index], writer);
         }
         else
         {
           auto cursor = writer.Reserve(1);
-          if (NetSerializeValueDelta(val[index], compare[index], writer))
+          if (NetSerializeValueDelta(to[index], from[index], writer))
           {
             cursor.WriteBits(1, 1);
           }
@@ -258,10 +258,10 @@ struct NetSerializerDelta<NetArrayList<T, MaxSize>, NetBitWriter>
     auto begin_cursor = writer.Reserve(1);
     int num_wrote = 0;
 
-    for (std::size_t index = 0; index < val.size(); index++)
+    for (std::size_t index = 0; index < to.size(); index++)
     {
       auto cursor = writer.Reserve(1);
-      if (NetSerializeValueDelta(val[index], compare[index], writer))
+      if (NetSerializeValueDelta(to[index], from[index], writer))
       {
         cursor.WriteBits(1, 1);
         num_wrote++;
