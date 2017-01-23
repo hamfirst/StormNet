@@ -344,7 +344,7 @@ struct NetSerializerDelta<NetSparseList<T, MaxSize>, NetBitWriter>
     if (size_change)
     {
       begin_cursor.WriteBits(1, 1);
-      writer.WriteBits(to.HighestIndex(), GetRequiredBits(MaxSize));
+      writer.WriteBits(to.HighestIndex() + 1, GetRequiredBits(MaxSize));
     }
 
     int num_wrote = 0;
@@ -353,7 +353,7 @@ struct NetSerializerDelta<NetSparseList<T, MaxSize>, NetBitWriter>
     int required_size_bits = GetRequiredBits(to.HighestIndex() + 1);
     auto size_cursor = writer.Reserve(required_size_bits);
 
-    for (std::size_t index = 0; index < to.Size(); index++)
+    for (int index = 0; index <= to.HighestIndex(); index++)
     {
       auto index_cursor = writer.Reserve(required_bits);
 
@@ -446,7 +446,7 @@ struct NetDeserializerDelta<NetSparseList<T, MaxSize>, NetBitReader>
   void operator()(NetSparseList<T, MaxSize> & val, NetBitReader & reader)
   {
     auto size_change = reader.ReadUBits(1);
-    auto highest_index = size_change ? reader.ReadUBits(GetRequiredBits(MaxSize)) : val.HighestIndex();
+    int highest_index = size_change ? (int)(reader.ReadUBits(GetRequiredBits(MaxSize)) - 1) : val.HighestIndex();
 
     int required_bits = GetRequiredBits(highest_index);
     auto size = reader.ReadUBits(GetRequiredBits(highest_index + 1));
@@ -472,6 +472,11 @@ struct NetDeserializerDelta<NetSparseList<T, MaxSize>, NetBitReader>
           val.RemoveAt((std::size_t)index);
         }
       }
+    }
+
+    for (auto index = val.HighestIndex(); index > highest_index; index--)
+    {
+      val.RemoveAt(index);
     }
   }
 };
