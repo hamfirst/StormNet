@@ -233,6 +233,7 @@
     <ClInclude Include="NetDeserialize.h" />
     <ClInclude Include="NetDeserializeDelta.h" />
     <ClInclude Include="NetException.h" />
+    <ClInclude Include="NetLerp.h" />
     <ClInclude Include="NetMessageSender.h" />
     <ClInclude Include="NetMetaUtil.h" />
     <ClInclude Include="NetPipeBuffer.h" />

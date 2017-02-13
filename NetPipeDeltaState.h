@@ -45,9 +45,15 @@ public:
     NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
     DataClass * reference_state = m_LastAckedState != -1 ? m_StateStore.Get(m_LastAckedState) : nullptr;
 
-    m_NextStateSlot++;
-    m_NextStateSlot %= DataStoreSize;
+    int next_state_slot = m_NextStateSlot + 1;
+    next_state_slot %= DataStoreSize;
 
+    if (next_state_slot == m_LastAckedState)
+    {
+      return;
+    }
+
+    m_NextStateSlot = next_state_slot;
     m_StateStore.StoreState(current_state, m_NextStateSlot);
 
     writer.WriteBits(m_NextStateSlot, GetRequiredBits(DataStoreSize - 1));

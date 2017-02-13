@@ -65,7 +65,9 @@ public:
   NetPipeMessageReceiver()
   {
     auto & type_db = BaseClass::__s_TypeDatabase;
-    m_Callbacks = std::make_unique<std::function<void(NetBitReader &)>[]>(type_db.GetNumTypes());
+
+    auto num_types = type_db.GetNumTypes();
+    m_Callbacks = std::make_unique<std::function<void(NetBitReader &)>[]>(num_types);
   }
 
   void Initialize(NetTransmitter * transmitter, NetPipeMode mode, int channel_index, int channel_bits)
@@ -96,6 +98,11 @@ public:
   {
     auto & type_db = BaseClass::__s_TypeDatabase;
     auto class_id = (std::size_t)reader.ReadUBits(GetRequiredBits(BaseClass::__s_TypeDatabase.GetNumTypes() - 1));
+
+    if (class_id >= type_db.GetNumTypes())
+    {
+      return;
+    }
 
     if (m_Callbacks[class_id])
     {
