@@ -29,8 +29,8 @@ struct NetLerpValNumeric
 {
   static void Process(const T & a, const T & b, T & dst, float fac)
   {
-    //dst = (T)((a * (1.0f - fac)) + (b * fac));
-    dst = b;
+    dst = (T)((a * (1.0f - fac)) + (b * fac));
+    //dst = b;
   }
 };
 
