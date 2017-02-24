@@ -6,6 +6,19 @@
 
 typedef unsigned int(*NetReplayPlaybackTimerFunc)();
 
+class NetReplayStreamCursor
+{
+  uint32_t m_CurrentTime;
+
+  std::size_t m_RemainingSize;
+
+  uint32_t m_NextPacketSize;
+  uint32_t m_NextPacketTime;
+
+  template <class ProtocolDef>
+  friend class NetReplayStreamReader;
+};
+
 template <class ProtocolDef>
 class NetReplayStreamReader
 {
@@ -58,6 +71,26 @@ public:
   auto & GetProtocol()
   {
     return m_Protocol;
+  }
+
+  NetReplayStreamCursor GetCursor()
+  {
+    NetReplayStreamCursor cursor;
+    cursor.m_CurrentTime = m_TimerFunc() - m_StartTime;
+    cursor.m_NextPacketSize = m_NextPacketSize;
+    cursor.m_NextPacketTime = m_NextPacketTime;
+    cursor.m_RemainingSize = m_RemainingSize;
+    return cursor;
+  }
+
+  void LoadCursor(const NetReplayStreamCursor & cursor)
+  {
+    NetReplayStreamCursor cursor;
+    m_StartTime = m_TimerFunc() - cursor.m_CurrentTime;
+    m_NextPacketSize = cursor.m_NextPacketSize;
+    m_NextPacketTime = cursor.m_NextPacketTime;
+    m_RemainingSize = cursor.m_RemainingSize;
+    return cursor;
   }
 
 private:
