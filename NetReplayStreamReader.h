@@ -90,7 +90,6 @@ public:
     m_NextPacketSize = cursor.m_NextPacketSize;
     m_NextPacketTime = cursor.m_NextPacketTime;
     m_RemainingSize = cursor.m_RemainingSize;
-    return cursor;
   }
 
 private:
