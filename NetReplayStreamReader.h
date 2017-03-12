@@ -85,7 +85,6 @@ public:
 
   void LoadCursor(const NetReplayStreamCursor & cursor)
   {
-    NetReplayStreamCursor cursor;
     m_StartTime = m_TimerFunc() - cursor.m_CurrentTime;
     m_NextPacketSize = cursor.m_NextPacketSize;
     m_NextPacketTime = cursor.m_NextPacketTime;
