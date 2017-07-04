@@ -47,7 +47,7 @@ class NetPipeFullStateReciever
 public:
   void Initialize(NetTransmitter * transmitter, NetPipeMode mode, int channel_index, int channel_bits)
   {
-
+    m_DefaultData = StormReflGetDefault<DataClass>();
   }
 
   template <typename C>
@@ -57,14 +57,31 @@ public:
     RegisterCallback(callback_func);
   }
 
+  void SetDefault(DataClass * default_data_ptr)
+  {
+    m_DefaultData = default_data_ptr;
+  }
+
   void RegisterCallback(std::function<void(DataClass &&)> && func)
   {
     m_UpdateCallback = std::move(func);
   }
 
+  template <typename C>
+  void RegisterCallback(void(C::*func)(const DataClass &), C * c)
+  {
+    auto callback_func = [=](const DataClass & inst) { (c->*func)(inst); };
+    RegisterCallback(callback_func);
+  }
+
   void GotMessage(NetBitReader & reader)
   {
-    DataClass inst = {};
+    if (m_DefaultData == nullptr)
+    {
+      return;
+    }
+
+    DataClass inst = *m_DefaultData;
     NetDeserializeValue(inst, reader);
 
     if (m_UpdateCallback)
@@ -76,8 +93,8 @@ public:
 private:
 
   std::function<void(DataClass &&)> m_UpdateCallback;
+  DataClass * m_DefaultData;
 };
-
 
 template <class DataClass, NetPipeMode Mode = NetPipeMode::kReliable>
 struct NetPipeFullState

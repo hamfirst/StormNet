@@ -23,8 +23,9 @@ NetTransmitterReplayStream::~NetTransmitterReplayStream()
   Clear();
 }
 
-NetBitWriter & NetTransmitterReplayStream::CreateWriter(NetPipeMode mode)
+NetBitWriter & NetTransmitterReplayStream::CreateWriter(NetPipeMode mode, int channel_index, int channel_bits, bool ack)
 {
+  CreateDefaultMessage(m_Writer, channel_index, channel_bits, ack);
   return m_Writer;
 }
 
@@ -91,8 +92,6 @@ void NetTransmitterReplayStream::Clear()
   m_CurrentBlock = &m_InitialBlock;
   m_CurrentOffset = 0;
 }
-
-
 
 void NetTransmitterReplayStream::WriteData(uint8_t * ptr, std::size_t size)
 {

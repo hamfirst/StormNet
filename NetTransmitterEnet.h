@@ -10,7 +10,7 @@ struct NetTransmitterEnet : public NetTransmitter
 {
   NetTransmitterEnet();
 
-  NetBitWriter & CreateWriter(NetPipeMode mode) override;
+  NetBitWriter & CreateWriter(NetPipeMode mode, int channel_index, int channel_bits, bool ack) override;
   void SendWriter(NetBitWriter & writer) override;
 
 public:

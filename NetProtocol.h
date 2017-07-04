@@ -13,6 +13,7 @@ class NetProtocolDefinition
 class NetProtocol
 {
 public:
+  virtual void GotMessage(NetBitReader & reader, bool ack, int channel_index) = 0;
   virtual void GotMessage(NetBitReader & reader) = 0;
 };
 
@@ -41,6 +42,18 @@ public:
     auto & GetReceiverChannel()
     {
       return m_Receivers.template GetChannel<ChannelIndex>();
+    }
+
+    void GotMessage(NetBitReader & reader, bool ack, int channel_index) override
+    {
+      if (ack)
+      {
+        m_Senders.GotAck(reader, channel_index);
+      }
+      else
+      {
+        m_Receivers.GotMessage(reader, channel_index);
+      }
     }
 
     void GotMessage(NetBitReader & reader) override
@@ -84,6 +97,18 @@ public:
       return m_Receivers.template GetChannel<ChannelIndex>();
     }
 
+    void GotMessage(NetBitReader & reader, bool ack, int channel_index) override
+    {
+      if (ack)
+      {
+        m_Senders.GotAck(reader, channel_index);
+      }
+      else
+      {
+        m_Receivers.GotMessage(reader, channel_index);
+      }
+    }
+
     void GotMessage(NetBitReader & reader) override
     {
       int is_ack = (int)reader.ReadUBits(1);
@@ -124,4 +149,3 @@ struct NetProtocolInfo
   template <typename RemoteProtoDef>
   using AsymmetricProtocolType = decltype(NetCreateAsymmetricProtocol(nullptr, LocalProtoDef{}, RemoteProtoDef{}));
 };
-

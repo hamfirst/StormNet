@@ -106,6 +106,15 @@
       <Filter>Reflection</Filter>
     </ClInclude>
     <ClInclude Include="NetLerp.h" />
+    <ClInclude Include="NetReflectionFixedPointLUT.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionFixedPointRange.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetProtocolFuncs.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />
@@ -128,5 +137,8 @@
     <Filter Include="Pipes">
       <UniqueIdentifier>{1e20dde9-1ae5-4e26-9d53-9191dbf7ac2c}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="StormNet.natvis" />
   </ItemGroup>
 </Project>

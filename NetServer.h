@@ -79,6 +79,18 @@ protected:
     m_Clients.Free(slot_ptr);
   }
 
+  virtual void GotMessage(uint32_t connection_id, NetBitReader & reader, bool ack, int channel_index) override
+  {
+    ClientInfo * ptr = m_Clients.GetElementForId(connection_id);
+    if (ptr == nullptr)
+    {
+      return;
+    }
+
+    ptr->m_Protocol.GotMessage(reader, ack, channel_index);
+  }
+
+
   virtual void GotMessage(uint32_t connection_id, NetBitReader & reader) override
   {
     ClientInfo * ptr = m_Clients.GetElementForId(connection_id);

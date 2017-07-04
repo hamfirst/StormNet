@@ -10,9 +10,10 @@ NetTransmitterEnet::NetTransmitterEnet()
 
 }
 
-NetBitWriter & NetTransmitterEnet::CreateWriter(NetPipeMode mode)
+NetBitWriter & NetTransmitterEnet::CreateWriter(NetPipeMode mode, int channel_index, int channel_bits, bool ack)
 {
   m_WriterMode = mode;
+  CreateDefaultMessage(m_Writer, channel_index, channel_bits, ack);
   return m_Writer;
 }
 

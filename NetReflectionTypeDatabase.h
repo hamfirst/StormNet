@@ -3,6 +3,8 @@
 #include <vector>
 #include <typeinfo>
 
+#include <hash/Hash.h>
+
 #define NET_INVALID_TYPE_HASH 0
 #define NET_INVALID_CLASS_ID 0x7FFFFFFF
 
@@ -14,6 +16,7 @@ public:\
   class _s_reg##ClassName { public: _s_reg##ClassName() { \
     static NetTypeRegistrationInfo reg; \
     reg.m_ClassName = #ClassName; \
+    reg.m_TypeInfo.m_TypeNameHash = crc32(#ClassName); \
     reg.m_TypeInfo.m_TypeIdHash = typeid(ClassName).hash_code(); \
     reg.m_TypeInfo.m_ParentIdHash = ParentTypeHash; \
     reg.m_TypeInfo.m_ParentClassId = NET_INVALID_CLASS_ID; \
@@ -40,6 +43,7 @@ class NetBitReader;
 
 struct NetTypeInfo
 {
+  uint32_t m_TypeNameHash;
   std::size_t m_TypeIdHash;
   std::size_t m_ParentIdHash;
 

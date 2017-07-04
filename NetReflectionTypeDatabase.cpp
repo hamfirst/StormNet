@@ -96,7 +96,7 @@ void NetTypeDatabase::FinalizeList()
 
   auto sort_func = [](const NetTypeRegistrationInfo * a, const NetTypeRegistrationInfo * b)
   {
-    return strcmp(a->m_ClassName, b->m_ClassName) <= 0;
+    return strcmp(a->m_ClassName, b->m_ClassName) < 0;
   };
 
   std::sort(all_reg_info.begin(), all_reg_info.end(), sort_func);

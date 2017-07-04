@@ -43,6 +43,17 @@ public:
     m_Transmitter->SendMessage(writer);
   }
 
+  void SendMessage(std::size_t class_id, const void * event_ptr)
+  {
+    auto & type_db = BaseClass::__s_TypeDatabase;
+    auto & type_info = type_db.GetTypeInfo(class_id);
+
+    NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
+    writer.WriteBits(class_id, GetRequiredBits(type_db.GetNumTypes() - 1));
+    type_info.m_Serialize(event_ptr, writer);
+    m_Transmitter->SendMessage(writer);
+  }
+
 private:
 
   NetTransmitter * m_Transmitter;
@@ -88,6 +99,28 @@ public:
     }
 
     itr->second.SendMessage(data);
+  }
+
+  void SendMessage(std::size_t class_id, const void * event_ptr)
+  {
+    for (auto & sender : m_Senders)
+    {
+      if (predicate(sender.first))
+      {
+        sender.second.SendMessage(class_id, event_ptr);
+      }
+    }
+  }
+
+  void SendMessage(std::size_t class_id, const void * event_ptr, std::size_t connection)
+  {
+    auto itr = m_Senders.find(connection);
+    if (itr == m_Senders.end())
+    {
+      return;
+    }
+
+    itr->second.SendMessage(class_id, event_ptr);
   }
 
   void AddSender(std::size_t connection_id, const NetMessageSender<BaseClass> & sender)

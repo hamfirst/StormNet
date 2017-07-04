@@ -137,6 +137,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\External;$(SolutionDir)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -243,6 +244,7 @@
     <ClInclude Include="NetPipeMessage.h" />
     <ClInclude Include="NetPipeMode.h" />
     <ClInclude Include="NetProtocol.h" />
+    <ClInclude Include="NetProtocolFuncs.h" />
     <ClInclude Include="NetProtocolReceiver.h" />
     <ClInclude Include="NetProtocolSender.h" />
     <ClInclude Include="NetReflection.h" />
@@ -250,6 +252,8 @@
     <ClInclude Include="NetReflectionCommon.h" />
     <ClInclude Include="NetReflectionEnum.h" />
     <ClInclude Include="NetReflectionFixedPoint.h" />
+    <ClInclude Include="NetReflectionFixedPointLUT.h" />
+    <ClInclude Include="NetReflectionFixedPointRange.h" />
     <ClInclude Include="NetReflectionList.h" />
     <ClInclude Include="NetReflectionMap.h" />
     <ClInclude Include="NetReflectionNumber.h" />
@@ -297,6 +301,9 @@
       <SubType>
       </SubType>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="StormNet.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

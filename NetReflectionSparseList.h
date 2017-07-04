@@ -86,7 +86,7 @@ public:
 
   private:
 
-    NetSparseListIterator(NetSparseList<T, MaxSize> * list, std::size_t physical_index) : m_List(list), m_PhysicalIndex(physical_index) { }
+    NetSparseListIterator(NetSparseList<T, MaxSize> * list, std::size_t physical_index) : m_List(list), m_PhysicalIndex((int)physical_index) { }
 
     int m_PhysicalIndex = 0;
     NetSparseList<T, MaxSize> * m_List;

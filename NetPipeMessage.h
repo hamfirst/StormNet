@@ -41,6 +41,19 @@ public:
     m_Transmitter->SendMessage(writer);
   }
 
+  void SendMessage(std::size_t class_id, const void * message_ptr)
+  {
+    auto & type_db = BaseClass::__s_TypeDatabase;
+    auto & type_info = type_db.GetTypeInfo(class_id);
+
+    NetBitWriter & writer = m_Transmitter->CreateMessage(m_Mode, m_ChannelIndex, m_ChannelBits);
+
+    writer.WriteBits(class_id, GetRequiredBits(type_db.GetNumTypes() - 1));
+    type_info.m_Serialize(message_ptr, writer);
+
+    m_Transmitter->SendMessage(writer);
+  }
+
   void GotAck(NetBitReader & reader)
   {
 
@@ -94,10 +107,23 @@ public:
     RegisterCallbackInteral<DataType, Callback>(callback);
   }
 
+  template <typename Callback>
+  void RegisterGenericCallback(Callback && callback)
+  {
+    m_GenericCallback = callback;
+  }
+
+  template <typename C>
+  void RegisterGenericCallback(void(C::*func)(std::size_t, void *), C * c)
+  {
+    auto callback_func = [=](std::size_t class_id, void * message_ptr) { (c->*func)(class_id, message_ptr); };
+    m_GenericCallback = callback_func;
+  }
+
   void GotMessage(NetBitReader & reader)
   {
     auto & type_db = BaseClass::__s_TypeDatabase;
-    auto class_id = (std::size_t)reader.ReadUBits(GetRequiredBits(BaseClass::__s_TypeDatabase.GetNumTypes() - 1));
+    auto class_id = (std::size_t)reader.ReadUBits(GetRequiredBits(type_db.GetNumTypes() - 1));
 
     if (class_id >= type_db.GetNumTypes())
     {
@@ -107,6 +133,14 @@ public:
     if (m_Callbacks[class_id])
     {
       m_Callbacks[class_id](reader);
+    }
+    else if (m_GenericCallback)
+    {
+      auto & type_info = type_db.GetTypeInfo(class_id);
+      auto ptr = type_info.m_HeapCreate();
+      type_info.m_Deserialize(ptr, reader);
+
+      type_info.m_HeapDestroy(ptr);
     }
   }
 
@@ -142,6 +176,7 @@ protected:
 
 private:
   std::unique_ptr<std::function<void(NetBitReader &)>[]> m_Callbacks;
+  std::function<void(std::size_t, void *)> m_GenericCallback;
 };
 
 template <class BaseClass, NetPipeMode Mode = NetPipeMode::kReliable>

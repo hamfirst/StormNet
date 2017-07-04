@@ -29,10 +29,8 @@ public:
     return std::get<ChannelIndex>(m_Receivers);
   }
 
-  void GotMessage(NetBitReader & reader)
+  void GotMessage(NetBitReader & reader, int target_channel)
   {
-    int target_channel = (int)reader.ReadUBits(GetRequiredBits(sizeof...(MessagePipeTypes) - 1));
-
     auto visitor = [&](auto & ... elems)
     {
       int channel_index = 0;
@@ -40,6 +38,12 @@ public:
     };
 
     NetMetaUtil::Apply(visitor, m_Receivers);
+  }
+
+  void GotMessage(NetBitReader & reader)
+  {
+    int target_channel = (int)reader.ReadUBits(GetRequiredBits(sizeof...(MessagePipeTypes)-1));
+    GotMessage(reader, target_channel);
   }
 
 private:

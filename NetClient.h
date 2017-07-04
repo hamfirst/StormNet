@@ -52,6 +52,11 @@ protected:
 
   }
 
+  virtual void GotMessage(NetBitReader & reader, bool ack, int channel_index) override
+  {
+    m_Protocol->GotMessage(reader, ack, channel_index);
+  }
+
   virtual void GotMessage(NetBitReader & reader) override
   {
     m_Protocol->GotMessage(reader);

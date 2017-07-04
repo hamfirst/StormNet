@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 #define NET_THROW(...) throw ...
-#define NET_THROW_OR(thr, throw_or) thr
+#define NET_THROW_OR(thr, throw_or) throw thr
 
 #else
 

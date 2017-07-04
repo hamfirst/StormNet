@@ -14,7 +14,12 @@ public:
   NetBitWriter & CreateAck(NetPipeMode mode, int channel_index, int channel_bits);
   void SendAck(NetBitWriter & writer);
 
+  static void GetDefaultMessageInfo(NetBitReader & reader, int sender_channel_bits, int recv_channel_bits, bool & ack, int & channel_index);
+
+protected:
+  static void CreateDefaultMessage(NetBitWriter & writer, int channel_index, int channel_bits, bool ack);
+
 private:
-  virtual NetBitWriter & CreateWriter(NetPipeMode mode) = 0;
+  virtual NetBitWriter & CreateWriter(NetPipeMode mode, int channel_index, int channel_bits, bool ack) = 0;
   virtual void SendWriter(NetBitWriter & writer) = 0;
 };

@@ -33,10 +33,8 @@ public:
     return std::get<ChannelIndex>(m_Senders);
   }
 
-  void GotAck(NetBitReader & reader)
+  void GotAck(NetBitReader & reader, int target_channel)
   {
-    int target_channel = (int)reader.ReadUBits(GetRequiredBits(sizeof...(MessagePipeTypes)-1));
-
     auto visitor = [&](auto & ... elems)
     {
       int channel_index = 0;
@@ -44,6 +42,12 @@ public:
     };
 
     NetMetaUtil::Apply(visitor, m_Senders);
+  }
+
+  void GotAck(NetBitReader & reader)
+  {
+    int target_channel = (int)reader.ReadUBits(GetRequiredBits(sizeof...(MessagePipeTypes)-1));
+    GotAck(reader, target_channel);
   }
 
 private:
