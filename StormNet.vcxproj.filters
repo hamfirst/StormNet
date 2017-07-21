@@ -115,6 +115,7 @@
     <ClInclude Include="NetProtocolFuncs.h">
       <Filter>Pipes</Filter>
     </ClInclude>
+    <ClInclude Include="NetRandom.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />
@@ -129,6 +130,7 @@
     <ClCompile Include="NetTransmitter.cpp" />
     <ClCompile Include="NetTransmitterReplayStream.cpp" />
     <ClCompile Include="NetTransmitterNull.cpp" />
+    <ClCompile Include="NetRandom.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Reflection">

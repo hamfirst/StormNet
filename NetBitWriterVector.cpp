@@ -55,7 +55,7 @@ void NetBitWriterVector::WriteBits(uint64_t val, int num_bits)
 void NetBitWriterVector::WriteSBits(int64_t val, int num_bits)
 {
 #ifdef _DEBUG
-  uint64_t mask = (1 << num_bits) - 1;
+  uint64_t mask = (1ULL << num_bits) - 1;
   int64_t min_value = 0xFFFFFFFFFFFFFFFF ^ mask;
   int64_t max_value = ~min_value;
 

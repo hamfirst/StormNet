@@ -140,6 +140,8 @@ public:
       auto ptr = type_info.m_HeapCreate();
       type_info.m_Deserialize(ptr, reader);
 
+      m_GenericCallback(class_id, ptr);
+
       type_info.m_HeapDestroy(ptr);
     }
   }

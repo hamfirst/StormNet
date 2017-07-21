@@ -186,14 +186,64 @@ public:
     m_Value = (((StorageType)val) << FractionalBits);
   }
 
-  explicit NetFixedPoint(float val)
+  explicit NetFixedPoint(const char * str)
   {
-    m_Value = ((StorageType)(val * kOne));
-  }
+    bool negative = false;
+    if (*str == '-')
+    {
+      str++;
+      negative = true;
+    }
 
-  explicit NetFixedPoint(double val)
-  {
-    m_Value = ((StorageType)(val * kOne));
+    if (*str == '+')
+    {
+      str++;
+    }
+
+    StorageType val = 0;
+    while (true)
+    {
+      if (*str < '0' || *str > '9')
+      {
+        break;
+      }
+
+      val *= 10;
+      val += *str - '0';
+
+      str++;
+    }
+
+    val <<= FractionalBits;
+
+    if (*str == '.')
+    {
+      str++;
+      StorageType dividend = 1;
+
+      while (true)
+      {
+        if (*str < '0' || *str > '9')
+        {
+          break;
+        }
+
+        auto frac = *str - '0';
+        frac <<= FractionalBits;
+
+        dividend *= 10;
+        val += (frac + (dividend >> 2)) / dividend;
+
+        str++;
+      }
+    }
+
+    m_Value = val;
+
+    if (negative)
+    {
+      m_Value = -m_Value;
+    }
   }
 
   static FixedType CreateFromRawVal(StorageType val)
@@ -220,7 +270,7 @@ public:
 
   operator int() const
   {
-    return m_Value >> FractionalBits;
+    return (int)(m_Value >> FractionalBits);
   }
 
   FixedType operator ++()
@@ -316,28 +366,28 @@ public:
     return m_Value <= val.m_Value;
   }
 
-  FixedType Invert()
+  FixedType Invert() const
   {
     return CreateFromRawVal(-m_Value);
   }
 
-  FixedType Abs()
+  FixedType Abs() const
   {
     return CreateFromRawVal(m_Value > 0 ? m_Value : -m_Value);
   }
 
-  FixedType Frac()
+  FixedType Frac() const
   {
     return CreateFromRawVal(m_Value & kFractionalMask);
   }
 
-  FixedType Floor()
+  FixedType Floor() const
   {
     auto f = Frac();
     return CreateFromRawVal(m_Value - f.m_Value);
   }
 
-  FixedType Round()
+  FixedType Round() const
   {
     auto frac = m_Value & (kFractionalMask);
     auto val = m_Value & (~kFractionalMask);
@@ -355,13 +405,13 @@ public:
     }
   }
 
-  FixedType Ceil()
+  FixedType Ceil() const
   {
     auto f = Floor();
     return CreateFromRawVal(f.m_Value + kOne);
   }
 
-  int Clz()
+  int Clz() const
   {
     auto byte_mask = 0xF << (NumBits - 4);
     auto bit_mask = 0x1 << (NumBits - 1);
@@ -384,6 +434,16 @@ public:
     return bits;
   }
 
+  FixedType Min(const FixedType & m) const
+  {
+    return m_Value <= m.m_Value ? CreateFromRawVal(m_Value) : CreateFromRawVal(m.m_Value);
+  }
+
+  FixedType Max(const FixedType & m) const
+  {
+    return m_Value >= m.m_Value ? CreateFromRawVal(m_Value) : CreateFromRawVal(m.m_Value);
+  }
+
   void Clamp(const FixedType & min, const FixedType & max)
   {
     if(m_Value < min.m_Value)
@@ -396,7 +456,7 @@ public:
     }
   }
 
-  FixedType Sqrt()
+  FixedType Sqrt() const
   {
     if (m_Value < 0)
     {
@@ -432,7 +492,7 @@ public:
     return guess_fixed;
   }
 
-  FixedType SinSlow()
+  FixedType SinSlow() const
   {
     auto one = CreateFromRawVal(kOne);
     auto val = CreateFromRawVal(m_Value);
@@ -531,7 +591,7 @@ public:
     return val;
   }
 
-  FixedType CosSlow()
+  FixedType CosSlow() const
   {
     auto one = CreateFromRawVal(kOne);
     auto val = CreateFromRawVal(kOne);
@@ -625,7 +685,7 @@ public:
     return val;
   }
 
-  FixedType AtanSlow()
+  FixedType AtanSlow() const
   {
     auto one = CreateFromRawVal(kOne);
     auto val = CreateFromRawVal(m_Value);
