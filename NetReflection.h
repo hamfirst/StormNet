@@ -6,6 +6,9 @@
 #include "NetReflectionFixedPoint.h"
 #include "NetReflectionString.h"
 #include "NetReflectionEnum.h"
+#include "NetReflectionRandom.h"
+#include "NetReflectionOptional.h"
+#include "NetReflectionPtr.h"
 #include "NetReflectionPolymorphic.h"
 #include "NetReflectionList.h"
 #include "NetReflectionMap.h"
@@ -14,9 +17,13 @@
 // bool
 // standard layout types
 // std::string
+// std::unique_ptr
+// std::shared_ptr
 // NetRangedNumber
 // NetFixedPoint
 // NetEnum
+// NetRandom
+// NetOptional
 // NetStruct
 // NetPolymorphic
 // NetList

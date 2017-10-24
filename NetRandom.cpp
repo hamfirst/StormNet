@@ -71,3 +71,8 @@ uint64_t NetRandom::GetRandom64()
   return r;
 }
 
+uint32_t NetRandom::GetSeed() const
+{
+  return m_State;
+}
+

@@ -142,6 +142,16 @@ public:
     return m_Values.end();
   }
 
+  auto data()
+  {
+    return m_Values.data();
+  }
+
+  auto data() const
+  {
+    return m_Values.data();
+  }
+
   void push_back(const T & val)
   {
     PushBack(val);
@@ -175,7 +185,7 @@ public:
       NET_THROW(std::runtime_error("NetArrayList overflow"));
     }
 
-    return m_Values.emplace(std::forward<Args>(args)...);
+    return m_Values.emplace_back(std::forward<Args>(args)...);
   }
   
   template <class Itr>
@@ -187,6 +197,18 @@ public:
     }
 
     return m_Values.insert(pos, val);
+  }
+
+  template <class Itr>
+  auto erase(Itr pos)
+  {
+    return m_Values.erase(pos);
+  }
+
+  template <class Itr>
+  auto erase(Itr pos, Itr end)
+  {
+    return m_Values.erase(pos, end);
   }
 
   template <class Itr, class... Args>
@@ -289,15 +311,7 @@ struct NetDeserializer<NetArrayList<T, MaxSize>, NetBitReader>
   void operator()(NetArrayList<T, MaxSize> & val, NetBitReader & reader)
   {
     auto size = reader.ReadUBits(GetRequiredBits(MaxSize));
-    while (val.size() < size)
-    {
-      val.EmplaceBack();
-    }
-
-    while (val.size() > size)
-    {
-      val.RemoveAt(val.size() - 1);
-    }
+    val.resize(size);
 
     for (std::size_t index = 0; index < size; index++)
     {

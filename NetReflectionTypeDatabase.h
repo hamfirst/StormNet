@@ -27,7 +27,7 @@ public:\
     reg.m_TypeInfo.m_Deserialize = [](void * val, NetBitReader & reader) { NetDeserializeValue<ClassName>(*static_cast<ClassName *>(val), reader); }; \
     reg.m_TypeInfo.m_DeserializeDelta = [](void * val, NetBitReader & reader) { NetDeserializeValueDelta<ClassName>(*static_cast<ClassName *>(val), reader); }; \
     reg.m_TypeInfo.m_Compare = [](const void * val1, const void * val2) { return StormReflCompare(*static_cast<const ClassName *>(val1), *static_cast<const ClassName *>(val2)); }; \
-    reg.m_TypeInfo.m_Copy = [](void * val1, void * val2) { (*static_cast<ClassName *>(val1)) = (*static_cast<ClassName *>(val2)); }; \
+    reg.m_TypeInfo.m_Copy = [](void * val1, const void * val2) { (*static_cast<ClassName *>(val1)) = (*static_cast<const ClassName *>(val2)); }; \
     TypeDb.AddClass(&reg); \
    } }; static _s_reg##ClassName _s_regInst##ClassName;
 
@@ -48,6 +48,7 @@ struct NetTypeInfo
   std::size_t m_ParentIdHash;
 
   std::size_t m_ParentClassId;
+  std::size_t m_ClassId;
 
   void * (*m_HeapCreate)();
   void (*m_HeapDestroy)(void * val);
@@ -56,7 +57,7 @@ struct NetTypeInfo
   void (*m_Deserialize)(void * val, NetBitReader & reader);
   void (*m_DeserializeDelta)(void * val, NetBitReader & reader);
   bool (*m_Compare)(const void * val1, const void * val2);
-  void (*m_Copy)(void * val1, void * val2);
+  void (*m_Copy)(void * val1, const void * val2);
 };
 
 struct NetTypeRegistrationInfo
@@ -97,7 +98,7 @@ public:
   template <class T>
   const NetTypeInfo & GetTypeInfo()
   {
-    return GetTypeInfo(typeid(T).hash_code());
+    return GetTypeInfo(GetClassId<T>());
   }
 
 private:

@@ -32,6 +32,15 @@ void NetServerBackendEnet::Update()
   ENetEvent e;
   NetTransmitterEnet * trans;
 
+  for (std::size_t index = 0, end = m_Transmitters.GetMaxAllocs(); index < end; ++index)
+  {
+    auto trans = m_Transmitters.GetElementForId(index);
+    if (trans)
+    {
+      trans->Update();
+    }
+  }
+
   while (enet_host_service(m_Host, &e, 0))
   {
     switch (e.type)
@@ -82,6 +91,7 @@ void NetServerBackendEnet::ForceDisconnect(uint32_t connection_id)
     return;
   }
 
+  trans->Clear();
   enet_peer_disconnect(trans->m_Peer, 0);
   trans->m_Disconnected = true;
 }

@@ -30,6 +30,7 @@ add_library(StormNet STATIC
             ./NetBitReaderVector.cpp
             ./NetBitWriter.cpp
             ./NetBitWriterVector.cpp
+            ./NetRandom.cpp
             ./NetReflectionTypeDatabase.cpp
             ./NetTransmitter.cpp
             ./NetTransmitterMemory.cpp
@@ -37,12 +38,15 @@ add_library(StormNet STATIC
             ./NetTransmitterReplayStream.cpp
             )
             
-if(NOT WEB)            
+
+if(NOT WEB)       
+     
   add_library(StormNetBindingsEnet STATIC           
               ./NetClientBackendEnet.cpp
               ./NetServerBackendEnet.cpp
               ./NetTransmitterEnet.cpp            
               )      
-              
+
 endif()                  
-            
+
+                   

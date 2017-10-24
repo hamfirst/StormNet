@@ -7,43 +7,57 @@
 template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
 struct NetFixedPointVals
 {
-  static void Init()
-  {
-    kZeroF = FixedType(0);
-    kOneF = FixedType(1);
-    kTwoF = FixedType(2);
-    kHalfF = FixedType("0.5");
-    kQuarter = FixedType("0.25");
-    kEighth = FixedType("0.125");
-    kNegOneF = FixedType(-1);
-
-    kPi = FixedType("3.14159265359");
-    kPiOver2 = FixedType("1.57079632679");
-    kPiOver4 = FixedType("0.78539816339");
-    kPiOver6 = FixedType("0.52359877559");
-    kPiTimes2 = FixedType("6.28318530718");
-    kSqrt2 = FixedType("1.41421356237");
-    kSqrt3 = FixedType("1.73205080757");
-  }
-
   using FixedType = NetFixedPoint<StorageType, NumBits, FractionalBits>;
 
-  static FixedType kZeroF;
-  static FixedType kOneF;
-  static FixedType kTwoF;
-  static FixedType kHalfF;
-  static FixedType kQuarter;
-  static FixedType kEighth;
-  static FixedType kNegOneF;
+  static const FixedType kZeroF;
+  static const FixedType kOneF;
+  static const FixedType kTwoF;
+  static const FixedType kHalfF;
+  static const FixedType kQuarter;
+  static const FixedType kEighth;
+  static const FixedType kNegOneF;
 
-  static FixedType kPi;
-  static FixedType kPiOver2;
-  static FixedType kPiOver4;
-  static FixedType kPiOver6;
-  static FixedType kPiTimes2;
-  static FixedType kSqrt2;
-  static FixedType kSqrt3;
+  static const FixedType kPi;
+  static const FixedType kPiOver2;
+  static const FixedType kPiOver4;
+  static const FixedType kPiOver6;
+  static const FixedType kPiOver8;
+  static const FixedType kPiTimes2;
+  static const FixedType kSqrt2;
+  static const FixedType kSqrt3;
 };
+
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kZeroF = NetFixedPoint<StorageType, NumBits, FractionalBits>(0);
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kOneF = NetFixedPoint<StorageType, NumBits, FractionalBits>(1);
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kTwoF = NetFixedPoint<StorageType, NumBits, FractionalBits>(2);
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kHalfF = NetFixedPoint<StorageType, NumBits, FractionalBits>("0.5");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kQuarter = NetFixedPoint<StorageType, NumBits, FractionalBits>("0.25");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kEighth = NetFixedPoint<StorageType, NumBits, FractionalBits>("0.125");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kNegOneF = NetFixedPoint<StorageType, NumBits, FractionalBits>(-1);
+
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPi = NetFixedPoint<StorageType, NumBits, FractionalBits>("3.14159265359");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiOver2 = NetFixedPoint<StorageType, NumBits, FractionalBits>("1.57079632679");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiOver4 = NetFixedPoint<StorageType, NumBits, FractionalBits>("0.78539816339");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiOver6 = NetFixedPoint<StorageType, NumBits, FractionalBits>("0.52359877559");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiOver8 = NetFixedPoint<StorageType, NumBits, FractionalBits>("0.39269908169");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiTimes2 = NetFixedPoint<StorageType, NumBits, FractionalBits>("6.28318530718");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kSqrt2 = NetFixedPoint<StorageType, NumBits, FractionalBits>("1.41421356237");
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+const NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kSqrt3 = NetFixedPoint<StorageType, NumBits, FractionalBits>("1.73205080757");
 
 template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
 class NetFixedPointLUT
@@ -57,8 +71,9 @@ public:
   static FixedType kLuAngletInterval;
   static FixedType kLutInterval;
 
+
   static_assert(LUTBits <= FractionalBits - 2, "Look up table is bigger than fractional bits");
-  static const int kLUTShiftBits = (FractionalBits) - LUTBits + 1;
+  static const int kLUTShiftBits = (FractionalBits)-LUTBits + 1;
   static const int kLUTShiftMask = (1 << kLUTShiftBits) - 1;
   static const int kLUTQuarterShiftBits = (FractionalBits - 1) - LUTBits;
   static const int kLUTQuarterShiftMask = (1 << kLUTQuarterShiftBits) - 1;
@@ -132,13 +147,14 @@ public:
     {
       auto ratio = y_abs / x_abs;
       val = SampleLut(ratio, kLUTShiftBits, kLUTShiftBits, m_AtanLut);
-
-      val = FixedVals::kPiOver2 - val;
     }
     else
     {
       auto ratio = x_abs / y_abs;
+      auto test_val = ratio.AtanSlow();
       val = SampleLut(ratio, kLUTShiftBits, kLUTShiftBits, m_AtanLut);
+
+      val = FixedVals::kPiOver2 - val;
     }
 
     if (x.m_Value < 0)
@@ -220,14 +236,15 @@ private:
 
   static FixedType AtanReduced(FixedType val, FixedType threshold)
   {
-    if (val <= threshold)
-    {
-      return val.AtanSlow();
-    }
+    return val.AtanSlow();
+    //if (val <= threshold)
+    //{
+    //  return val.AtanSlow();
+    //}
 
-    auto new_val = FixedVals::kSqrt3 * val - FixedVals::kOneF;
-    new_val /= (FixedVals::kSqrt3 + val);
-    return FixedVals::kPiOver6 + AtanReduced(new_val, threshold);
+    //auto new_val = FixedVals::kSqrt3 * val - FixedVals::kOneF;
+    //new_val /= (FixedVals::kSqrt3 + val);
+    //return FixedVals::kPiOver6 + AtanReduced(new_val, threshold);
   }
 
   static FixedType m_SinLut[LUTElements + 1];
@@ -235,35 +252,24 @@ private:
   static FixedType m_AtanLut[LUTElements + 1];
 };
 
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::kLuAngletInterval = NetFixedPoint<StorageType, NumBits, FractionalBits>(0);
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::kLutInterval = NetFixedPoint<StorageType, NumBits, FractionalBits>(0);
+
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::m_SinLut[NetFixedPointLUT<StorageType, NumBits, FractionalBits>::LUTElements + 1];
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::m_CosLut[NetFixedPointLUT<StorageType, NumBits, FractionalBits>::LUTElements + 1];
+template <typename StorageType, StorageType NumBits, StorageType FractionalBits>
+NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::m_AtanLut[NetFixedPointLUT<StorageType, NumBits, FractionalBits>::LUTElements + 1];
+
+
 #define INIT_LUT_DATA(StorageType, NumBits, FractionalBits)                                                                                             \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kZeroF;                                  \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kOneF;                                   \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kTwoF;                                   \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kHalfF;                                  \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kQuarter;                                \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kEighth;                                 \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kNegOneF;                                \
-                                                                                                                                                        \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPi;                                     \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiOver2;                                \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiOver4;                                \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiOver6;                                \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kPiTimes2;                               \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kSqrt2;                                  \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointVals<StorageType, NumBits, FractionalBits>::kSqrt3;                                  \
-                                                                                                                                                        \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::kLuAngletInterval;                        \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::kLutInterval;                             \
-                                                                                                                                                        \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::m_SinLut[LUTElements + 1];                \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::m_CosLut[LUTElements + 1];                \
-  NetFixedPoint<StorageType, NumBits, FractionalBits> NetFixedPointLUT<StorageType, NumBits, FractionalBits>::m_AtanLut[LUTElements + 1];               \
-                                                                                                                                                        \
   struct s_reg_class_##StorageType##NumBits##LUTElements                                                                                                \
   {                                                                                                                                                     \
     s_reg_class_##StorageType##NumBits##LUTElements()                                                                                                   \
     {                                                                                                                                                   \
-      NetFixedPointVals<StorageType, NumBits, FractionalBits>::Init();                                                                                  \
       NetFixedPointLUT<StorageType, NumBits, FractionalBits>::Init();                                                                                   \
     }                                                                                                                                                   \
   } s_reg_class_##StorageType##NumBits##LUTElements;                                                                                                    \

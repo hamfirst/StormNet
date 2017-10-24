@@ -102,8 +102,13 @@ void NetTypeDatabase::FinalizeList()
   std::sort(all_reg_info.begin(), all_reg_info.end(), sort_func);
 
   m_TypeDatabase.clear();
+  std::size_t class_id = 0;
+
   for (auto & info : all_reg_info)
   {
+    info->m_TypeInfo.m_ClassId = class_id;
+    class_id++;
+
     if (info->m_TypeInfo.m_ParentIdHash != NET_INVALID_TYPE_HASH)
     {
       for(size_t base_index = 0; base_index < all_reg_info.size(); base_index++)

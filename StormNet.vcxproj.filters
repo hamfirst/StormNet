@@ -116,6 +116,18 @@
       <Filter>Pipes</Filter>
     </ClInclude>
     <ClInclude Include="NetRandom.h" />
+    <ClInclude Include="NetReflectionRandom.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionOptional.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetPipeVariant.h">
+      <Filter>Pipes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetReflectionPtr.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />

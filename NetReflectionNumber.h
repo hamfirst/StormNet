@@ -13,6 +13,8 @@ class NetRangedNumber
 {
 public:
 
+  using RangedNumber = NetRangedNumber<NumericType, Min, Max>;
+
   NetRangedNumber()
   {
     m_Value = std::max(Min, std::min(Max, 0));
@@ -23,7 +25,7 @@ public:
     m_Value = std::max(Min, std::min(Max, val));
   }
 
-  NetRangedNumber(const NetRangedNumber<NumericType, Min, Max> & val)
+  NetRangedNumber(const RangedNumber & val)
   {
     m_Value = val.m_Value;
   }
@@ -43,11 +45,6 @@ public:
   operator NumericType() const
   {
     return m_Value;
-  }
-
-  operator bool() const
-  {
-    return m_Value != 0;
   }
 
   float AsFloat() const
@@ -78,89 +75,105 @@ public:
     return !m_Value;
   }
 
-  NumericType operator + (NumericType val) const
+  template <typename Number>
+  NumericType operator + (Number && val) const
   {
     return m_Value + val;
   }
 
-  NumericType operator += (NumericType val)
+  template <typename Number>
+  NumericType operator += (Number && val)
   {
     Set(m_Value + val);
     return m_Value;
   }
 
-  NumericType operator - (NumericType val) const
+  template <typename Number>
+  NumericType operator - (Number && val) const
   {
     return m_Value - val;
   }
 
-  NumericType operator -= (NumericType val)
+  template <typename Number>
+  NumericType operator -= (Number && val)
   {
     Set(m_Value - val);
     return m_Value;
   }
 
-  NumericType operator * (NumericType val) const
+  template <typename Number>
+  NumericType operator * (Number && val) const
   {
     return m_Value * val;
   }
 
-  NumericType operator *= (NumericType val)
+  template <typename Number>
+  NumericType operator *= (Number && val)
   {
     Set(m_Value * val);
     return m_Value;
   }
 
-  NumericType operator / (NumericType val) const
+  template <typename Number>
+  NumericType operator / (Number && val) const
   {
     return m_Value / val;
   }
 
-  NumericType operator /= (NumericType val)
+  template <typename Number>
+  NumericType operator /= (Number && val)
   {
     Set(m_Value / val);
     return m_Value;
   }
- 
-  NumericType operator % (NumericType val) const
+
+  template <typename Number>
+  NumericType operator % (Number && val) const
   {
     return m_Value % val;
   }
 
-  NumericType operator %= (NumericType val)
+  template <typename Number>
+  NumericType operator %= (Number && val)
   {
     Set(m_Value % val);
     return m_Value;
   }
 
-  NumericType operator & (NumericType val) const
+  template <typename Number>
+  NumericType operator & (Number && val) const
   {
     return m_Value & val;
   }
 
-  NumericType operator &= (NumericType val)
+  template <typename Number>
+  NumericType operator &= (Number && val)
   {
     Set(m_Value & val);
     return m_Value;
   }
 
-  NumericType operator | (NumericType val) const
+  template <typename Number>
+  NumericType operator | (Number && val) const
   {
     return m_Value | val;
   }
 
-  NumericType operator |= (NumericType val)
+  template <typename Number>
+  NumericType operator |= (Number && val)
   {
     Set(m_Value | val);
     return m_Value;
   }
 
-  NumericType operator ^ (NumericType val) const
+  template <typename Number>
+  NumericType operator ^ (Number && val) const
   {
     return m_Value ^ val;
   }
 
-  NumericType operator ^= (NumericType val)
+  template <typename Number>
+  NumericType operator ^= (Number && val)
   {
     Set(m_Value ^ val);
     return m_Value;
@@ -171,54 +184,64 @@ public:
     return ~m_Value;
   }
 
-  NumericType operator >> (NumericType val) const
+  template <typename Number>
+  NumericType operator >> (Number && val) const
   {
     return m_Value >> val;
   }
 
-  NumericType operator >>= (NumericType val)
+  template <typename Number>
+  NumericType operator >>= (Number && val)
   {
     Set(m_Value >> val);
     return m_Value;
   }
 
-  NumericType operator << (NumericType val) const
+  template <typename Number>
+  NumericType operator << (Number && val) const
   {
     return m_Value << val;
   }
 
-  NumericType operator <<= (NumericType val)
+  template <typename Number>
+  NumericType operator <<= (Number && val)
   {
     Set(m_Value << val);
     return m_Value;
   }
 
-  bool operator == (NumericType val) const
+  template <typename Number>
+  bool operator == (Number && val) const
   {
     return m_Value == val;
   }
 
-  bool operator != (NumericType val) const
+  template <typename Number>
+  bool operator != (Number && val) const
   {
     return m_Value != val;
   }
 
-  bool operator > (NumericType val) const
+  template <typename Number>
+  bool operator > (Number && val) const
   {
     return m_Value > val;
   }
 
-  bool operator >= (NumericType val) const
+  template <typename Number>
+  bool operator >= (Number && val) const
   {
     return m_Value >= val;
   }
 
-  bool operator < (NumericType val) const
+  template <typename Number>
+  bool operator < (Number && val) const
   {
     return m_Value < val;
   }
 
-  bool operator <= (NumericType val) const
+  template <typename Number>
+  bool operator <= (Number && val) const
   {
     return m_Value <= val;
   }
@@ -231,7 +254,6 @@ private:
 
   NumericType m_Value;
 };
-
 
 template <class NumericType, NumericType Min, NumericType Max, class NetBitWriter>
 struct NetSerializer<NetRangedNumber<NumericType, Min, Max>, NetBitWriter>

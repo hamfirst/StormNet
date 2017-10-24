@@ -9,7 +9,9 @@
 
 #else
 
-#define NET_THROW(...)
+#include <cassert>
+
+#define NET_THROW(...) assert(false)
 #define NET_THROW_OR(thr, throw_or) throw_or
 
 #endif

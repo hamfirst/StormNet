@@ -31,6 +31,34 @@ public:
     type_info.m_Copy(m_Ptr, rhs.m_Ptr);
   }
 
+  NetPolymorphic(std::size_t class_id, const void * data_ptr)
+  {
+    auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(class_id);
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate());
+    m_ClassId = class_id;
+    m_TypeHash = type_info.m_TypeIdHash;
+
+    type_info.m_Copy(m_Ptr, data_ptr);
+  }
+
+  template <typename DataType, std::enable_if_t<std::is_base_of<BaseClass, DataType>::value> * Enable = nullptr>
+  NetPolymorphic(const DataType & rhs)
+  {
+    auto & type_info = BaseClass::__s_TypeDatabase.template GetTypeInfo<DataType>();
+    m_Ptr = new DataType(rhs);
+    m_ClassId = type_info.m_ClassId;
+    m_TypeHash = type_info.m_TypeIdHash;
+  }
+
+  template <typename DataType, std::enable_if_t<std::is_base_of<BaseClass, DataType>::value> * Enable = nullptr>
+  NetPolymorphic(DataType && rhs)
+  {
+    auto & type_info = BaseClass::__s_TypeDatabase.template GetTypeInfo<DataType>();
+    m_Ptr = new DataType(std::move(rhs));
+    m_ClassId = type_info.m_ClassId;
+    m_TypeHash = type_info.m_TypeIdHash;
+  }
+
   ~NetPolymorphic()
   {
     auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(m_ClassId);

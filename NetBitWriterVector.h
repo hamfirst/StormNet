@@ -27,10 +27,15 @@ public:
   void Reset();
 
 private:
+
+  void WriteBitsInternal(uint64_t val, int num_bits);
+
+private:
   friend class NetBitReaderVector;
 
   std::vector<uint8_t> m_Buffer;
   int m_Bit = 8;
+  int m_TotalBits = 0;
 };
 
 
