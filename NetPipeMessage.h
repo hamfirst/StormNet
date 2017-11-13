@@ -182,7 +182,7 @@ protected:
     auto deserialize_cb = [=](NetBitReader & reader)
     {
       DataType dt;
-      NetDeserializeValue(dt, std::move(reader));
+      NetDeserializeValue(dt, reader);
       callback(dt);
     };
 

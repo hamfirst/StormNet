@@ -10,6 +10,12 @@
 
 #include <type_traits>
 
+template <typename Type>
+struct NetPolymorphicTypeInit
+{
+  
+};
+
 template <class BaseClass>
 class NetPolymorphic
 {
@@ -19,6 +25,17 @@ public:
     m_Ptr = static_cast<BaseClass *>(BaseClass::__s_TypeDatabase.GetDefaultTypeInfo().m_HeapCreate());
     m_ClassId = BaseClass::__s_TypeDatabase.GetDefaultClassId();
     m_TypeHash = typeid(BaseClass).hash_code();
+  }
+
+  template <typename DataType, std::enable_if_t<std::is_base_of<BaseClass, DataType>::value> * Enable = nullptr>
+  NetPolymorphic(const NetPolymorphicTypeInit<DataType> & dt)
+  {
+    auto class_id = BaseClass::__s_TypeDatabase.GetClassId(typeid(DataType).hash_code());
+    auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(class_id);
+
+    m_ClassId = class_id;
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate());
+    m_TypeHash = type_info.m_TypeIdHash;
   }
 
   NetPolymorphic(const NetPolymorphic<BaseClass> & rhs)
@@ -91,15 +108,15 @@ public:
   }
 
   template <class Class, std::enable_if_t<std::is_base_of<BaseClass, Class>::value> * enable = nullptr>
-  void SetType()
+  void SetType(bool force = false)
   {
     auto class_id = BaseClass::__s_TypeDatabase.GetClassId(typeid(Class).hash_code());
-    SetType(class_id);
+    SetType(class_id, force);
   }
 
-  void SetType(std::size_t class_id)
+  void SetType(std::size_t class_id, bool force = false)
   {
-    if (class_id == m_ClassId)
+    if (class_id == m_ClassId && force == false)
     {
       return;
     }
@@ -116,6 +133,12 @@ public:
   std::size_t GetTypeHash() const
   {
     return m_TypeHash;
+  }
+
+  template <class T>
+  bool Is() const
+  {
+    return m_TypeHash == typeid(T).hash_code();
   }
 
   template <class T>

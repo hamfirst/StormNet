@@ -30,7 +30,7 @@ void NetBitReaderBuffer::ReadBuffer(void * buffer, std::size_t num_bytes)
     m_Buffer += num_bytes;
     m_Offset += num_bytes;
     m_NumBytes -= num_bytes;
-    m_TotalBits += num_bytes * 8;
+    m_TotalBits += (int)num_bytes * 8;
   }
   else
   {

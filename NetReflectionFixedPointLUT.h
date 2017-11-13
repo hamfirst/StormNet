@@ -105,12 +105,70 @@ public:
 
   static FixedType Sin(FixedType fixed)
   {
-    return SampleAngleLut(fixed, m_SinLut);
+    fixed /= FixedVals::kPiTimes2;
+    fixed -= fixed.Floor();
+
+    if (fixed < FixedVals::kHalfF)
+    {
+      if (fixed < FixedVals::kQuarter)
+      {
+        auto val = SampleLut(fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, m_SinLut);
+        return val;
+      }
+      else
+      {
+        auto val = SampleLut(FixedVals::kHalfF - fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, m_SinLut);
+        return val;
+      }
+    }
+    else
+    {
+      fixed -= FixedVals::kHalfF;
+      if (fixed < FixedVals::kQuarter)
+      {
+        auto val = SampleLut(fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, m_SinLut);
+        return val.Invert();
+      }
+      else
+      {
+        auto val = SampleLut(FixedVals::kHalfF - fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, m_SinLut);
+        return val.Invert();
+      }
+    }
   }
 
   static FixedType Cos(FixedType fixed)
   {
-    return SampleAngleLut(fixed, m_CosLut);
+    fixed /= FixedVals::kPiTimes2;
+    fixed -= fixed.Floor();
+
+    if (fixed < FixedVals::kHalfF)
+    {
+      if (fixed < FixedVals::kQuarter)
+      {
+        auto val = SampleLut(fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, m_CosLut);
+        return val;
+      }
+      else
+      {
+        auto val = SampleLut(FixedVals::kHalfF - fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, m_CosLut);
+        return val.Invert();
+      }
+    }
+    else
+    {
+      fixed -= FixedVals::kHalfF;
+      if (fixed < FixedVals::kQuarter)
+      {
+        auto val = SampleLut(fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, m_CosLut);
+        return val.Invert();
+      }
+      else
+      {
+        auto val = SampleLut(FixedVals::kHalfF - fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, m_CosLut);
+        return val;
+      }
+    }
   }
 
   static FixedType Atan2(FixedType y, FixedType x)
@@ -197,41 +255,6 @@ private:
     auto delta = index_error * diff;
     auto interpolated_value = val1 + delta;
     return interpolated_value;
-  }
-
-  static FixedType SampleAngleLut(FixedType fixed, FixedType * lut)
-  {
-    fixed /= FixedVals::kPiTimes2;
-    fixed -= fixed.Floor();
-
-    if (fixed >= FixedVals::kHalfF)
-    {
-      fixed -= FixedVals::kHalfF;
-      if (fixed >= FixedVals::kQuarter)
-      {
-        fixed -= FixedVals::kQuarter;
-        auto val = SampleLut(fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, lut);
-        return val.Invert();
-      }
-      else
-      {
-        auto val = SampleLut(FixedVals::kQuarter - fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, lut);
-        return val.Invert();
-      }
-    }
-    else
-    {
-      if (fixed >= FixedVals::kQuarter)
-      {
-        auto val = SampleLut(FixedVals::kHalfF - fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, lut);
-        return val;
-      }
-      else
-      {
-        auto val = SampleLut(fixed, kLUTQuarterShiftBits, kLUTQuarterShiftBits, lut);
-        return val;
-      }
-    }
   }
 
   static FixedType AtanReduced(FixedType val, FixedType threshold)

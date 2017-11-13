@@ -6,8 +6,11 @@
 #include "NetDeserialize.h"
 #include "NetException.h"
 
-#ifndef _WEB
+#if !defined(_WEB) && !defined(_ANDROID)
 #include <xmmintrin.h>
+#include <intrin.h>  
+
+#pragma intrinsic(_mul128)  
 #endif
 
 #pragma warning(push)
@@ -15,7 +18,7 @@
 
 inline int64_t FixedPointMultiplyWide(int64_t a, int64_t b, int FractionalBits)
 {
-#if !defined(WIN32) && !defined(_LINUX) && !defined(_WEB) && !defined(STORM_REFL_PARSE) && defined(SHIT)
+#if !defined(WIN32) && !defined(_LINUX) && !defined(_WEB) && !defined(_ANDROID) && !defined(STORM_REFL_PARSE)
 
   int64_t hi;
   int64_t result = _mul128(a, b, &hi);
