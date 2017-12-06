@@ -191,7 +191,7 @@ public:
     m_Value = (((StorageType)val) << FractionalBits);
   }
 
-  explicit NetFixedPoint(const char * str)
+  explicit constexpr NetFixedPoint(const char * str)
   {
     bool negative = false;
     if (*str == '-')

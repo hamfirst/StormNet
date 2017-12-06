@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <StormRefl/StormReflMetaEnum.h>
 
 #include <hash/Hash.h>
