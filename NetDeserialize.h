@@ -8,8 +8,7 @@
 
 #include "NetReflectionCommon.h"
 
-template <typename Type, class NetBitReader>
-struct NetDeserializer;
+
 
 template <class Type, class NetBitReader>
 void NetDeserializeValue(Type & t, NetBitReader && reader)
@@ -34,7 +33,16 @@ void NetDeserializeType(Type & val, NetBitReader && reader)
 template <typename Type, class NetBitReader, typename std::enable_if<StormReflCheckReflectable<Type>::value>::type * = nullptr>
 void NetDeserializeType(Type & val, NetBitReader && reader)
 {
-  auto deserialize_visitor = [&](auto f) { NetDeserializeValue(f.Get(), reader); };
+  auto deserialize_visitor = [&](auto f) 
+  {
+    using FieldMetaInfo = typename std::template decay_t<decltype(f)>;
+    if (StormReflHasAnnotation<Type, FieldMetaInfo::GetFieldIndex()>("static"))
+    {
+      return;
+    }
+
+    NetDeserializeValue(f.Get(), reader); 
+  };
   StormReflVisitEach(val, deserialize_visitor);
 };
 

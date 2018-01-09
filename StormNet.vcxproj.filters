@@ -128,6 +128,9 @@
     <ClInclude Include="NetReflectionPtr.h">
       <Filter>Reflection</Filter>
     </ClInclude>
+    <ClInclude Include="NetReflectionTuple.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />

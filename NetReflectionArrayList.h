@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <new>
 
 #include "NetReflectionCommon.h"
 #include "NetException.h"
@@ -103,7 +104,10 @@ public:
       return m_Values.back();
     }
 
-    m_Values.emplace(m_Values.begin() + logical_index, std::forward<Args>(args)...);
+    auto ptr = &m_Values[logical_index];
+    ptr->~T();
+    new (ptr) T(std::forward<Args>(args)...);
+
     return m_Values[logical_index];
   }
 
@@ -164,7 +168,7 @@ public:
 
   void resize(std::size_t new_size)
   {
-    if (new_size >= MaxSize)
+    if (new_size > MaxSize)
     {
       NET_THROW(std::runtime_error("NetArrayList overflow"));
     }

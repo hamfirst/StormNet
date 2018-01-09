@@ -34,7 +34,16 @@ void NetSerializeType(const Type & val, NetBitWriter & writer)
 template <typename Type, class NetBitWriter, typename std::enable_if<StormReflCheckReflectable<Type>::value>::type * = nullptr>
 void NetSerializeType(const Type & val, NetBitWriter & writer)
 {
-  auto serialize_visitor = [&](auto f) { NetSerializeValue(f.Get(), writer); };
+  auto serialize_visitor = [&](auto f) 
+  {
+    using FieldMetaInfo = typename std::template decay_t<decltype(f)>;
+    if (StormReflHasAnnotation<Type, FieldMetaInfo::GetFieldIndex()>("static"))
+    {
+      return;
+    }
+
+    NetSerializeValue(f.Get(), writer); 
+  };
   StormReflVisitEach(val, serialize_visitor);
 };
 

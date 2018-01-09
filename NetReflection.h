@@ -6,8 +6,10 @@
 #include "NetReflectionFixedPoint.h"
 #include "NetReflectionString.h"
 #include "NetReflectionEnum.h"
+#include "NetReflectionStruct.h"
 #include "NetReflectionRandom.h"
 #include "NetReflectionOptional.h"
+#include "NetReflectionTuple.h"
 #include "NetReflectionPtr.h"
 #include "NetReflectionPolymorphic.h"
 #include "NetReflectionList.h"
@@ -19,6 +21,8 @@
 // std::string
 // std::unique_ptr
 // std::shared_ptr
+// std::pair
+// std::tuple
 // NetRangedNumber
 // NetFixedPoint
 // NetEnum

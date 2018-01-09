@@ -12,3 +12,10 @@
 #include <optional/optional.hpp>
 
 #include <gsl/gsl.h>
+
+template <typename Type, class NetBitReader>
+struct NetDeserializer;
+
+
+template <typename Type, class NetBitWriter>
+struct NetSerializer;

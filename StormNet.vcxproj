@@ -348,6 +348,7 @@
     <ClInclude Include="NetReflectionSparseList.h" />
     <ClInclude Include="NetReflectionString.h" />
     <ClInclude Include="NetReflectionStruct.h" />
+    <ClInclude Include="NetReflectionTuple.h" />
     <ClInclude Include="NetReflectionTypeDatabase.h" />
     <ClInclude Include="NetReflectionTypeDatabaseRegister.h" />
     <ClInclude Include="NetReplayStreamReader.h" />
