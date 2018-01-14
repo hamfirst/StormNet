@@ -14,7 +14,7 @@
 template <typename RegType>
 void NetInitializeTypeRegistration(NetTypeRegistrationInfo & reg)
 {
-  reg.m_ClassName = StormReflTypeInfo<RegType>::GetName();
+  reg.m_TypeInfo.m_ClassName = StormReflTypeInfo<RegType>::GetName();
   reg.m_TypeInfo.m_Abstract = false;
   reg.m_TypeInfo.m_TypeIdHash = typeid(RegType).hash_code();
   reg.m_TypeInfo.m_ParentIdHash = NET_INVALID_TYPE_HASH;

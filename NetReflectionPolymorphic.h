@@ -218,7 +218,7 @@ struct NetSerializer<NetPolymorphic<T>, NetBitWriter>
   void operator()(const NetPolymorphic<T> & val, NetBitWriter & writer)
   {
     auto & type_info = val.GetTypeInfo();
-    writer.WriteBits(val.GetClassId(), GetRequiredBits(T::__s_TypeDatabase.GetNumTypes()));
+    writer.WriteBits(val.GetClassId(), GetRequiredBits(T::__s_TypeDatabase.GetNumTypes() - 1));
     type_info.m_Serialize(val.GetBase(), writer);
   }
 };
@@ -252,7 +252,7 @@ struct NetDeserializer<NetPolymorphic<T>, NetBitReader>
 {
   void operator()(NetPolymorphic<T> & val, NetBitReader & reader)
   {
-    uint64_t class_id = reader.ReadUBits(GetRequiredBits(T::__s_TypeDatabase.GetNumTypes()));
+    uint64_t class_id = reader.ReadUBits(GetRequiredBits(T::__s_TypeDatabase.GetNumTypes() - 1));
     val.SetType(class_id);
 
     auto & type_info = val.GetTypeInfo();

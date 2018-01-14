@@ -38,6 +38,11 @@ void NetBitReaderBuffer::ReadBuffer(void * buffer, std::size_t num_bytes)
   }
 }
 
+bool NetBitReaderBuffer::IsEmpty()
+{
+  return m_NumBytes <= 1;
+}
+
 uint64_t NetBitReaderBuffer::ReadBitsInternal(int num_bits)
 {
   if (num_bits <= 0)
@@ -45,7 +50,7 @@ uint64_t NetBitReaderBuffer::ReadBitsInternal(int num_bits)
     return 0;
   }
 
-  if (num_bits == 64 && m_NumBytes > 8)
+  if (num_bits == 64 && m_NumBytes >= 8)
   {
     uint64_t * ptr = (uint64_t *)m_Buffer;
     uint64_t val = *ptr;

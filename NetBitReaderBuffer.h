@@ -11,6 +11,7 @@ public:
   int64_t ReadSBits(int num_bits);
 
   void ReadBuffer(void * buffer, std::size_t num_bytes);
+  bool IsEmpty();
 
 private:
   uint64_t ReadBitsInternal(int num_bits);

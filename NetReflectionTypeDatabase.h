@@ -16,7 +16,7 @@ public:\
 #define NET_REGISTER_TYPE_IMPL(ClassName, ParentTypeHash, TypeDb, TypeList) \
   class _s_reg##ClassName { public: _s_reg##ClassName() { \
     static NetTypeRegistrationInfo reg; \
-    reg.m_ClassName = #ClassName; \
+    reg.m_TypeInfo.m_ClassName = #ClassName; \
     reg.m_TypeInfo.m_Abstract = false; \
     reg.m_TypeInfo.m_TypeNameHash = crc32(#ClassName); \
     reg.m_TypeInfo.m_TypeIdHash = typeid(ClassName).hash_code(); \
@@ -36,7 +36,7 @@ public:\
 #define NET_REGISTER_ABSTRACT_TYPE_IMPL(ClassName, ParentTypeHash, TypeDb, TypeList) \
   class _s_reg##ClassName { public: _s_reg##ClassName() { \
     static NetTypeRegistrationInfo reg; \
-    reg.m_ClassName = #ClassName; \
+    reg.m_TypeInfo.m_ClassName = #ClassName; \
     reg.m_TypeInfo.m_Abstract = true; \
     reg.m_TypeInfo.m_TypeNameHash = crc32(#ClassName); \
     reg.m_TypeInfo.m_TypeIdHash = typeid(ClassName).hash_code(); \
@@ -74,6 +74,7 @@ class NetBitReader;
 
 struct NetTypeInfo
 {
+  const char * m_ClassName;
   uint32_t m_TypeNameHash;
   std::size_t m_TypeIdHash;
   std::size_t m_ParentIdHash;
@@ -95,7 +96,6 @@ struct NetTypeInfo
 
 struct NetTypeRegistrationInfo
 {
-  const char * m_ClassName;
   NetTypeInfo m_TypeInfo;
 
   NetTypeRegistrationInfo * m_Next;
