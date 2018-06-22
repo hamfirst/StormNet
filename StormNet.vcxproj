@@ -229,6 +229,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\External;$(SolutionDir)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -287,6 +289,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\External;$(SolutionDir)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -333,6 +337,7 @@
     </ClInclude>
     <ClInclude Include="NetReflection.h" />
     <ClInclude Include="NetReflectionArrayList.h" />
+    <ClInclude Include="NetReflectionBitBuffer.h" />
     <ClInclude Include="NetReflectionCommon.h" />
     <ClInclude Include="NetReflectionEnum.h" />
     <ClInclude Include="NetReflectionFixedPoint.h" />
@@ -382,6 +387,7 @@
       <SubType>
       </SubType>
     </ClCompile>
+    <ClCompile Include="NetReflectionBitBuffer.cpp" />
     <ClCompile Include="NetReflectionTypeDatabase.cpp" />
     <ClCompile Include="NetTransmitter.cpp" />
     <ClCompile Include="NetTransmitterMemory.cpp" />

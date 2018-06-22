@@ -14,6 +14,7 @@
 #include "NetReflectionPolymorphic.h"
 #include "NetReflectionList.h"
 #include "NetReflectionMap.h"
+#include "NetReflectionBitBuffer.h"
 
 // Full list of types
 // bool
@@ -32,6 +33,7 @@
 // NetPolymorphic
 // NetList
 // NetMap
+// NetReflectionBitBuffer
 
 template <class T, std::size_t MaxVal>
 using NetHashMap16 = NetMap<uint16_t, T, MaxVal>;

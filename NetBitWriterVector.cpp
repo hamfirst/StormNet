@@ -161,6 +161,11 @@ void NetBitWriterVector::Reset()
   m_TotalBits = 0;
 }
 
+int NetBitWriterVector::GetTotalBits() const
+{
+  return m_TotalBits;
+}
+
 void NetBitWriterVector::WriteBitsInternal(uint64_t val, int num_bits)
 {
   if (num_bits <= 0)

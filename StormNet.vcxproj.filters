@@ -131,6 +131,9 @@
     <ClInclude Include="NetReflectionTuple.h">
       <Filter>Reflection</Filter>
     </ClInclude>
+    <ClInclude Include="NetReflectionBitBuffer.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />
@@ -146,6 +149,9 @@
     <ClCompile Include="NetTransmitterReplayStream.cpp" />
     <ClCompile Include="NetTransmitterNull.cpp" />
     <ClCompile Include="NetRandom.cpp" />
+    <ClCompile Include="NetReflectionBitBuffer.cpp">
+      <Filter>Reflection</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Reflection">

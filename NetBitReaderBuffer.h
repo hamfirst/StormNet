@@ -6,6 +6,11 @@ class NetBitReaderBuffer : public NetBitReader
 {
 public:
   NetBitReaderBuffer(void * buffer, std::size_t num_bytes);
+  NetBitReaderBuffer(const NetBitReaderBuffer & rhs) = default;
+  NetBitReaderBuffer(NetBitReaderBuffer && rhs) = default;
+
+  NetBitReaderBuffer & operator = (const NetBitReaderBuffer & rhs) = default;
+  NetBitReaderBuffer & operator = (NetBitReaderBuffer && rhs) = default;
 
   uint64_t ReadUBits(int num_bits);
   int64_t ReadSBits(int num_bits);
