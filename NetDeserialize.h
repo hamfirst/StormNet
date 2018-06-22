@@ -8,18 +8,17 @@
 
 #include "NetReflectionCommon.h"
 
-template <typename Type, class NetBitReader>
-struct NetDeserializer;
+
 
 template <class Type, class NetBitReader>
-void NetDeserializeValue(Type & t, NetBitReader & reader)
+void NetDeserializeValue(Type & t, NetBitReader && reader)
 {
   NetDeserializer<Type, NetBitReader> s;
   s(t, reader);
 }
 
 template <class Type, class NetBitReader, std::enable_if_t<StormReflCheckReflectable<Type>::value == false && std::is_standard_layout<Type>::value> * enable = nullptr>
-void NetDeserializeType(Type & val, NetBitReader & reader)
+void NetDeserializeType(Type & val, NetBitReader && reader)
 {
   char * mem_ptr = (char *)&val;
   char * end_ptr = mem_ptr + sizeof(Type);
@@ -32,9 +31,18 @@ void NetDeserializeType(Type & val, NetBitReader & reader)
 }
 
 template <typename Type, class NetBitReader, typename std::enable_if<StormReflCheckReflectable<Type>::value>::type * = nullptr>
-void NetDeserializeType(Type & val, NetBitReader & reader)
+void NetDeserializeType(Type & val, NetBitReader && reader)
 {
-  auto deserialize_visitor = [&](auto f) { NetDeserializeValue(f.Get(), reader); };
+  auto deserialize_visitor = [&](auto f) 
+  {
+    using FieldMetaInfo = typename std::template decay_t<decltype(f)>;
+    if (StormReflHasAnnotation<Type, FieldMetaInfo::GetFieldIndex()>("static"))
+    {
+      return;
+    }
+
+    NetDeserializeValue(f.Get(), reader); 
+  };
   StormReflVisitEach(val, deserialize_visitor);
 };
 

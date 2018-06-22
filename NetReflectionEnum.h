@@ -1,7 +1,12 @@
 
+#pragma once
+
+
 #include <StormRefl/StormReflMetaEnum.h>
 
 #include <hash/Hash.h>
+
+#include "NetReflectionCommon.h"
 
 template <class EnumType>
 class NetEnum

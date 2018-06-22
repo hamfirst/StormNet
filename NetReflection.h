@@ -6,21 +6,34 @@
 #include "NetReflectionFixedPoint.h"
 #include "NetReflectionString.h"
 #include "NetReflectionEnum.h"
+#include "NetReflectionStruct.h"
+#include "NetReflectionRandom.h"
+#include "NetReflectionOptional.h"
+#include "NetReflectionTuple.h"
+#include "NetReflectionPtr.h"
 #include "NetReflectionPolymorphic.h"
 #include "NetReflectionList.h"
 #include "NetReflectionMap.h"
+#include "NetReflectionBitBuffer.h"
 
 // Full list of types
 // bool
 // standard layout types
 // std::string
+// std::unique_ptr
+// std::shared_ptr
+// std::pair
+// std::tuple
 // NetRangedNumber
 // NetFixedPoint
 // NetEnum
+// NetRandom
+// NetOptional
 // NetStruct
 // NetPolymorphic
 // NetList
 // NetMap
+// NetReflectionBitBuffer
 
 template <class T, std::size_t MaxVal>
 using NetHashMap16 = NetMap<uint16_t, T, MaxVal>;

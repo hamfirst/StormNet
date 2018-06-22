@@ -23,8 +23,8 @@ public:
 class NetBitWriterCursor
 {
 public:
-  NetBitWriterCursor(NetBitWriter * writer, void * buffer, std::size_t byte, int bit, std::size_t size)
-    : m_Writer(writer), m_Buffer(buffer), m_Byte(byte), m_Bit(bit), m_Size(size), m_Wrote(false)
+  NetBitWriterCursor(NetBitWriter * writer, void * buffer, std::size_t byte, int bit, std::size_t size, int total_bits)
+    : m_Writer(writer), m_Buffer(buffer), m_Byte(byte), m_Bit(bit), m_Size(size), m_Wrote(false), m_TotalBits(total_bits)
   { }
 
   NetBitWriterCursor(const NetBitWriterCursor & rhs) = default;
@@ -43,4 +43,5 @@ public:
   int m_Bit;
   std::size_t m_Size;
   bool m_Wrote;
+  int m_TotalBits;
 };

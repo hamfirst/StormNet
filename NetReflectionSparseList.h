@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <vector>
+#include <cstdlib>
 
 #include "NetReflectionCommon.h"
 #include "NetException.h"
@@ -9,23 +10,519 @@
 #include "NetDeserialize.h"
 #include "NetDeserializeDelta.h"
 
+template <class A, class B> struct NetSparseListPairHelper
+{
+  NetSparseListPairHelper(std::pair<A, B> && pair_data) :
+    m_Data(pair_data)
+  {
+
+  }
+
+  template <class AA, class BB>
+  NetSparseListPairHelper(AA && a, BB && b) :
+    m_Data(a, b)
+  {
+  }
+
+  NetSparseListPairHelper(NetSparseListPairHelper<A, B> && rhs) = default;
+
+  std::pair<A, B> * operator ->()
+  {
+    return &m_Data;
+  }
+
+private:
+  std::pair<A, B> m_Data;
+};
+
+
 template <class T, std::size_t MaxSize>
 class NetSparseList
 {
 public:
+  using ContainerType = T;
 
-  using value_type = T;
+  template <typename PtrType, typename RefType, typename ListPtrType>
+  struct NetSparseListIterator
+  {
+    NetSparseListIterator(const NetSparseListIterator<PtrType, RefType, ListPtrType> & rhs) : m_List(rhs.m_List), m_PhysicalIndex(rhs.m_PhysicalIndex) { }
 
-  NetSparseList() = default;
-  NetSparseList(const NetSparseList<T, MaxSize> & rhs) = default;
-  NetSparseList(NetSparseList<T, MaxSize> && rhs) = default;
+    bool operator != (const NetSparseListIterator<PtrType, RefType, ListPtrType> & rhs) const
+    {
+      if (m_List != rhs.m_List)
+      {
+        return true;
+      }
 
-  NetSparseList<T, MaxSize> & operator = (const NetSparseList<T, MaxSize> & rhs) = default;
-  NetSparseList<T, MaxSize> & operator = (NetSparseList<T, MaxSize> && rhs) = default;
+      return m_PhysicalIndex != rhs.m_PhysicalIndex;
+    }
+
+    bool operator == (const NetSparseListIterator<PtrType, RefType, ListPtrType> & rhs) const
+    {
+      if (m_List != rhs.m_List)
+      {
+        return false;
+      }
+
+      return m_PhysicalIndex == rhs.m_PhysicalIndex;
+    }
+
+    std::pair<std::size_t, RefType> operator *() const
+    {
+      return std::pair<std::size_t, RefType>((std::size_t)m_PhysicalIndex, m_List->m_Values[m_PhysicalIndex].m_Value);
+    }
+
+    NetSparseListPairHelper<std::size_t, RefType> operator ->() const
+    {
+      return NetSparseListPairHelper<std::size_t, RefType>((std::size_t)m_PhysicalIndex, m_List->m_Values[m_PhysicalIndex].m_Value);
+    }
+
+    void operator++()
+    {
+      do
+      {
+        m_PhysicalIndex++;
+      } while (m_PhysicalIndex <= m_List->m_HighestIndex && m_List->m_Values[m_PhysicalIndex].m_Valid == false);
+    }
+
+  private:
+
+    NetSparseListIterator(ListPtrType list, int physical_index) : m_List(list), m_PhysicalIndex(physical_index) { }
+
+    int m_PhysicalIndex;
+    ListPtrType m_List;
+
+    friend class NetSparseList<T, MaxSize>;
+  };
+
+  using iterator = NetSparseListIterator<T *, T &, NetSparseList<T, MaxSize> *>;
+  using const_iterator = NetSparseListIterator<const T *, const T &, const NetSparseList<T, MaxSize> *>;
+
+  NetSparseList() :
+    m_HighestIndex(-1),
+    m_Capacity(0),
+    m_Values(nullptr)
+  {
+
+  }
+
+  NetSparseList(const NetSparseList<T, MaxSize> & rhs) :
+    m_HighestIndex(rhs.m_HighestIndex),
+    m_Capacity(rhs.m_Capacity)
+  {
+    if (rhs.m_Capacity > 0)
+    {
+      m_Values = Allocate<ContainerData>(rhs.m_Capacity);
+
+      for (std::size_t index = 0; index < rhs.m_Capacity; index++)
+      {
+        m_Values[index].m_Valid = rhs.m_Values[index].m_Valid;
+        if (rhs.m_Values[index].m_Valid)
+        {
+          new(&m_Values[index].m_Value) T(rhs.m_Values[index].m_Value);
+        }
+      }
+    }
+    else
+    {
+      m_Values = nullptr;
+    }
+  }
+
+  NetSparseList(NetSparseList<T, MaxSize> && rhs) :
+    m_HighestIndex(rhs.m_HighestIndex),
+    m_Capacity(rhs.m_Capacity),
+    m_Values(rhs.m_Values)
+  {
+    rhs.m_HighestIndex = -1;
+    rhs.m_Capacity = 0;
+    rhs.m_Values = nullptr;
+
+  }
+
+
+  ~NetSparseList()
+  {
+    DestroyAllElements();
+
+    if (m_Capacity > 0)
+    {
+      Deallocate(m_Values);
+    }
+  }
+
+  NetSparseList<T, MaxSize> & operator = (const NetSparseList<T, MaxSize> & rhs)
+  {
+    Copy(rhs);
+
+    return *this;
+  }
+
+  NetSparseList<T, MaxSize> & operator = (NetSparseList<T, MaxSize> && rhs)
+  {
+    Move(std::move(rhs));
+
+    return *this;
+  }
+
+
+  void Clear()
+  {
+    DestroyAllElementsAndInvalidate();
+    m_HighestIndex = -1;
+  }
+
+  void Reserve(std::size_t size)
+  {
+    if (size > m_Capacity)
+    {
+      Grow(size);
+    }
+  }
+
+  template <typename ... InitArgs>
+  std::size_t Emplace(InitArgs && ... args)
+  {
+    for (std::size_t index = 0; index < m_Capacity; ++index)
+    {
+      if (m_Values[index].m_Valid == false)
+      {
+        EmplaceAt(index, std::forward<InitArgs>(args)...);
+        return index;
+      }
+    }
+    EmplaceBack(std::forward<InitArgs>(args)...);
+    return (std::size_t)m_HighestIndex;
+  }
+
+  T & PushBack(const T & val)
+  {
+    if (m_HighestIndex + 1 == m_Capacity)
+    {
+      Grow();
+    }
+
+    m_HighestIndex++;
+
+    m_Values[m_HighestIndex].m_Valid = true;
+    new(&m_Values[m_HighestIndex].m_Value) T(val);
+
+    return m_Values[m_HighestIndex].m_Value;
+  }
+
+  template <typename ... InitArgs>
+  T & EmplaceBack(InitArgs && ... args)
+  {
+    if (m_HighestIndex + 1 == m_Capacity)
+    {
+      Grow();
+    }
+
+    m_HighestIndex++;
+
+    m_Values[m_HighestIndex].m_Valid = true;
+    new(&m_Values[m_HighestIndex].m_Value) T(std::forward<InitArgs>(args)...);
+
+    return m_Values[m_HighestIndex].m_Value;
+  }
+
+  T & InsertAt(std::size_t logical_index, const T & val)
+  {
+    GrowToFit(logical_index);
+
+    m_HighestIndex = m_HighestIndex == -1 || logical_index > (std::size_t)m_HighestIndex ? (int)logical_index : m_HighestIndex;
+
+    if (m_Values[logical_index].m_Valid)
+    {
+      m_Values[logical_index].m_Value = val;
+    }
+    else
+    {
+      m_Values[logical_index].m_Valid = true;
+      new (&m_Values[logical_index].m_Value) T(val);
+    }
+
+    return m_Values[logical_index].m_Value;
+  }
+
+  template <typename ... InitArgs>
+  T & EmplaceAt(std::size_t logical_index, InitArgs && ... args)
+  {
+    GrowToFit(logical_index);
+
+    m_HighestIndex = m_HighestIndex == -1 || logical_index > (std::size_t)m_HighestIndex ? (int)logical_index : m_HighestIndex;
+
+    if (m_Values[logical_index].m_Valid)
+    {
+      m_Values[logical_index].m_Value = T(std::forward<InitArgs>(args)...);
+    }
+    else
+    {
+      m_Values[logical_index].m_Valid = true;
+      new (&m_Values[logical_index].m_Value) T(std::forward<InitArgs>(args)...);
+    }
+
+    return m_Values[logical_index].m_Value;
+  }
+
+  void Remove(const iterator & itr)
+  {
+    RemoveAt(itr.m_PhysicalIndex);
+  }
+
+  void Remove(const const_iterator & itr)
+  {
+    RemoveAt(itr.m_PhysicalIndex);
+  }
+
+  void RemoveAt(std::size_t logical_index)
+  {
+    if (logical_index >= m_Capacity)
+    {
+      return;
+    }
+
+    if (m_Values[logical_index].m_Valid)
+    {
+      m_Values[logical_index].m_Value.~T();
+      m_Values[logical_index].m_Valid = false;
+      while (m_HighestIndex >= 0 && m_Values[m_HighestIndex].m_Valid == false)
+      {
+        m_HighestIndex--;
+      }
+    }
+  }
+
+  int HighestIndex() const
+  {
+    return m_HighestIndex;
+  }
+
+  void Compress()
+  {
+    int empty_index = -1;
+    for (std::size_t index = 0; index < m_Capacity; index++)
+    {
+      if (m_Values[index].m_Valid)
+      {
+        if (empty_index != -1)
+        {
+          new (&m_Values[empty_index].m_Value) T(std::move(m_Values[index].m_Value));
+          m_Values[index].m_Value.~T();
+          m_Values[empty_index].m_Valid = true;
+          m_Values[index].m_Valid = false;
+
+          empty_index++;
+        }
+      }
+      else
+      {
+        if (empty_index == -1)
+        {
+          empty_index = (int)index;
+        }
+      }
+    }
+  }
+
+  bool HasAt(std::size_t index) const
+  {
+    if (m_HighestIndex == -1)
+    {
+      return false;
+    }
+
+    if (index > (std::size_t)m_HighestIndex)
+    {
+      return false;
+    }
+
+    if (m_Values[index].m_Valid == false)
+    {
+      return false;
+    }
+
+    return true;
+  }
+
+  T & operator[](std::size_t index)
+  {
+    if (m_HighestIndex == -1)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    if (index > (std::size_t)m_HighestIndex)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    if (m_Values[index].m_Valid == false)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    return m_Values[index].m_Value;
+  }
+
+  const T & operator[](std::size_t index) const
+  {
+    if (m_HighestIndex == -1)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    if (index > (std::size_t)m_HighestIndex)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    if (m_Values[index].m_Valid == false)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    return m_Values[index].m_Value;
+  }
+
+  T & GetAt(std::size_t index)
+  {
+    if (m_HighestIndex == -1)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    if (index > (std::size_t)m_HighestIndex)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    if (m_Values[index].m_Valid == false)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    return m_Values[index].m_Value;
+  }
+
+  const T & GetAt(std::size_t index) const
+  {
+    if (m_HighestIndex == -1)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    if (index > (std::size_t)m_HighestIndex)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    if (m_Values[index].m_Valid == false)
+    {
+      throw std::out_of_range("Invalid index");
+    }
+
+    return m_Values[index].m_Value;
+  }
+
+  T * TryGet(std::size_t index)
+  {
+    if (m_HighestIndex == -1)
+    {
+      return nullptr;
+    }
+
+    if (index > (std::size_t)m_HighestIndex)
+    {
+      return nullptr;
+    }
+
+    if (m_Values[index].m_Valid == false)
+    {
+      return nullptr;
+    }
+
+    return &m_Values[index].m_Value;
+  }
+
+  const T * TryGet(std::size_t index) const
+  {
+    if (m_HighestIndex == -1)
+    {
+      return nullptr;
+    }
+
+    if (index > (std::size_t)m_HighestIndex)
+    {
+      return nullptr;
+    }
+
+    if (m_Values[index].m_Valid == false)
+    {
+      return nullptr;
+    }
+
+    return &m_Values[index].m_Value;
+  }
+
+  std::size_t Size() const
+  {
+    std::size_t count = 0;
+    for (int index = 0; index <= m_HighestIndex; ++index)
+    {
+      if (m_Values[index].m_Valid)
+      {
+        count++;
+      }
+    }
+
+    return count;
+  }
+
+  std::size_t Capacity() const
+  {
+    return m_Capacity;
+  }
+
+  iterator begin()
+  {
+    int start_index = 0;
+    while (start_index <= m_HighestIndex && m_Values[start_index].m_Valid == false)
+    {
+      start_index++;
+    }
+
+    iterator itr(this, start_index);
+    return itr;
+  }
+
+  iterator end()
+  {
+    iterator itr(this, m_HighestIndex + 1);
+    return itr;
+  }
+
+  const_iterator begin() const
+  {
+    int start_index = 0;
+    while (start_index <= m_HighestIndex && m_Values[start_index].m_Valid == false)
+    {
+      start_index++;
+    }
+
+    const_iterator itr(this, start_index);
+    return itr;
+  }
+
+  const_iterator end() const
+  {
+    const_iterator itr(this, m_HighestIndex + 1);
+    return itr;
+  }
 
   bool operator == (const NetSparseList<T, MaxSize> & rhs) const
   {
-    if (m_HighestIndex != m_HighestIndex)
+    if (m_HighestIndex != rhs.m_HighestIndex)
     {
       return false;
     }
@@ -37,7 +534,7 @@ public:
 
     while (itr1 != last)
     {
-      if ((*itr1).first == (*itr2).first && StormReflCompare((*itr1).second, (*itr2).second))
+      if (itr1->first == itr2->first && itr1->second == itr2->second)
       {
         ++itr1;
         ++itr2;
@@ -50,262 +547,166 @@ public:
     return true;
   }
 
-  struct NetSparseListIterator
+private:
+
+  template <typename Elem>
+  Elem * Allocate(std::size_t count)
   {
-    NetSparseListIterator(const NetSparseListIterator & rhs) : m_List(rhs.m_List), m_PhysicalIndex(rhs.m_PhysicalIndex) { }
-
-    bool operator != (const NetSparseListIterator & rhs) const
+    auto ptr = (Elem *)malloc(sizeof(Elem) * count);
+    if (ptr == nullptr)
     {
-      if (m_List != rhs.m_List)
-      {
-        return true;
-      }
-
-      return m_PhysicalIndex != rhs.m_PhysicalIndex;
+      throw std::bad_alloc();
     }
 
-    const std::pair<std::size_t, T &> operator *() const
-    {
-      std::pair<std::size_t, T &> val((std::size_t)m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
-      return val;
-    }
-
-    const std::pair<std::size_t, T &> operator ->() const
-    {
-      std::pair<std::size_t, T &> val((std::size_t)m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
-      return val;
-    }
-
-    void operator++()
-    {
-      do
-      {
-        m_PhysicalIndex++;
-      } while (m_PhysicalIndex < m_List->m_HighestIndex && static_cast<bool>(m_List->m_Values[m_PhysicalIndex]) == false);
-    }
-
-  private:
-
-    NetSparseListIterator(NetSparseList<T, MaxSize> * list, std::size_t physical_index) : m_List(list), m_PhysicalIndex((int)physical_index) { }
-
-    int m_PhysicalIndex = 0;
-    NetSparseList<T, MaxSize> * m_List;
-
-    friend class NetSparseList<T, MaxSize>;
-  };
-
-  struct NetSparseListIteratorConst
-  {
-    NetSparseListIteratorConst(const NetSparseListIteratorConst & rhs) : m_List(rhs.m_List), m_PhysicalIndex(rhs.m_PhysicalIndex) { }
-
-    bool operator != (const NetSparseListIteratorConst & rhs) const
-    {
-      if (m_List != rhs.m_List)
-      {
-        return true;
-      }
-
-      return m_PhysicalIndex != rhs.m_PhysicalIndex;
-    }
-
-    const std::pair<std::size_t, const T &> operator *() const
-    {
-      std::pair<std::size_t, const T &> val((std::size_t)m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
-      return val;
-    }
-
-    const std::pair<std::size_t, const T &> operator ->() const
-    {
-      std::pair<std::size_t, const T &> val((std::size_t)m_PhysicalIndex, *m_List->m_Values[m_PhysicalIndex]);
-      return val;
-    }
-
-    void operator++()
-    {
-      do
-      {
-        m_PhysicalIndex++;
-      } while (m_PhysicalIndex < m_List->m_HighestIndex && static_cast<bool>(m_List->m_Values[m_PhysicalIndex]) == false);
-    }
-
-  private:
-
-    NetSparseListIteratorConst(const NetSparseList<T, MaxSize> * list, std::size_t physical_index) : m_List(list), m_PhysicalIndex((int)physical_index) { }
-
-    int m_PhysicalIndex = 0;
-    const NetSparseList<T, MaxSize> * m_List;
-
-    friend class NetSparseList<T, MaxSize>;
-  };
-
-  bool HasElementAt(std::size_t logical_index) const
-  {
-    if (logical_index >= m_Values.size())
-    {
-      return false;
-    }
-
-    return static_cast<bool>(m_Values[logical_index]);
+    return ptr;
   }
 
-  void Clear()
+  void Deallocate(void * ptr)
   {
-    m_Values.clear();
-    m_HighestIndex = -1;
+    free(ptr);
   }
 
-  void Reserve(std::size_t size)
+  void Grow()
   {
-    m_Values.reserve(size);
-  }
-
-  void PushBack(const T & val)
-  {
-    if (m_HighestIndex + 1 >= MaxSize)
+    if (m_Capacity == 0)
     {
-      NET_THROW(std::runtime_error("NetSparseList overflow"));
-    }
-
-    m_HighestIndex = (int)m_Values.size();
-    m_Values.emplace_back(val);
-  }
-
-  template <class... Args>
-  T & EmplaceBack(Args &&... args)
-  {
-    if (m_HighestIndex + 1 >= MaxSize)
-    {
-      NET_THROW(std::runtime_error("NetSparseList overflow"));
-    }
-
-    m_HighestIndex = (int)m_Values.size();
-    m_Values.emplace_back(std::experimental::in_place, std::forward<Args>(args)...);
-    return m_Values[m_HighestIndex].value();
-  }
-
-  T & InsertAt(const T & val, std::size_t logical_index)
-  {
-    if (logical_index >= MaxSize)
-    {
-      NET_THROW(std::runtime_error("NetSparseList overflow"));
-    }
-
-    m_Values.resize(std::max(m_Values.size(), logical_index + 1));
-
-    m_Values[logical_index] = std::experimental::optional<T>(val);
-    m_HighestIndex = std::max(m_HighestIndex, (int)logical_index);
-    return m_Values[logical_index].value();
-  }
-
-  template <class... Args>
-  T & EmplaceAt(std::size_t logical_index, Args &&... args)
-  {
-    if (logical_index >= MaxSize)
-    {
-      NET_THROW(std::runtime_error("NetSparseList overflow"));
-    }
-
-    m_Values.resize(std::max(m_Values.size(), logical_index + 1));
-
-    m_Values[logical_index] = std::experimental::optional<T>(std::experimental::in_place, std::forward<Args>(args)...);
-    m_HighestIndex = std::max(m_HighestIndex, (int)logical_index);
-    return m_Values[logical_index].value();
-  }
-
-  void RemoveAt(std::size_t logical_index)
-  {
-    if (logical_index >= m_Values.size())
-    {
+      Grow(1);
       return;
     }
 
-    m_Values[logical_index] = {};
+    Grow(m_Capacity * 2);
+  }
 
-    if (m_HighestIndex == logical_index)
+  void GrowToFit(std::size_t logical_index)
+  {
+    if (logical_index >= m_Capacity)
     {
-      for (int index = m_HighestIndex; index >= 0 && static_cast<bool>(m_Values[index]) == false; index--)
+      if (m_Capacity == 0)
       {
-        m_HighestIndex--;
+        Grow(logical_index + 1);
+      }
+      else
+      {
+        std::size_t new_capacity = m_Capacity;
+        do
+        {
+          new_capacity *= 2;
+        } while (new_capacity <= logical_index);
+
+        Grow(new_capacity);
       }
     }
   }
 
-  bool HasAt(std::size_t logical_index) const
+  void Grow(std::size_t requested_size)
   {
-    if (logical_index >= m_Values.size())
+    auto values = Allocate<ContainerData>(requested_size);
+
+    if (m_Capacity > 0)
     {
-      return false;
+      for (int index = 0; index <= m_HighestIndex; index++)
+      {
+        values[index].m_Valid = m_Values[index].m_Valid;
+        if (m_Values[index].m_Valid)
+        {
+          new (&values[index].m_Value) T(std::move(m_Values[index].m_Value));
+          m_Values[index].m_Value.~T();
+        }
+      }
+
+      Deallocate(m_Values);
     }
 
-    return (bool)m_Values[logical_index];
-  }
-
-  auto & operator [] (std::size_t index)
-  {
-    return *m_Values[index];
-  }
-
-  auto & operator [] (std::size_t index) const
-  {
-    return *m_Values[index];
-  }
-
-  int HighestIndex() const
-  {
-    return m_HighestIndex;
-  }
-
-  std::size_t Size() const
-  {
-    return m_Values.size();
-  }
-
-  std::size_t GetMaximumCapacity() const
-  {
-    return MaxSize;
-  }
-
-  NetSparseListIterator begin()
-  {
-    int start_index = 0;
-    while ((int)start_index < m_HighestIndex && static_cast<bool>(m_Values[start_index]) == false)
+    for (int index = m_HighestIndex + 1; index < (int)requested_size; index++)
     {
-      start_index++;
+      values[index].m_Valid = false;
     }
 
-    NetSparseListIterator itr(this, start_index);
-    return itr;
+    m_Values = values;
+    m_Capacity = requested_size;
   }
 
-  NetSparseListIterator end()
+  void DestroyAllElements()
   {
-    NetSparseListIterator itr(this, m_HighestIndex + 1);
-    return itr;
-  }
-
-  NetSparseListIteratorConst begin() const
-  {
-    std::size_t start_index = 0;
-    while ((int)start_index < m_HighestIndex && static_cast<bool>(m_Values[start_index]) == false)
+    for (int index = 0; index <= m_HighestIndex; index++)
     {
-      start_index++;
+      if (m_Values[index].m_Valid)
+      {
+        m_Values[index].m_Value.~T();
+      }
+    }
+  }
+
+  void DestroyAllElementsAndInvalidate()
+  {
+    for (int index = 0; index <= m_HighestIndex; index++)
+    {
+      if (m_Values[index].m_Valid)
+      {
+        m_Values[index].m_Value.~T();
+        m_Values[index].m_Valid = false;
+      }
+    }
+  }
+
+  void Copy(const NetSparseList<T, MaxSize> & rhs)
+  {
+    DestroyAllElements();
+
+    if (rhs.m_HighestIndex >= (int)m_Capacity)
+    {
+      Deallocate(m_Values);
+
+      m_Values = Allocate<ContainerData>(rhs.m_Capacity);
+      m_Capacity = rhs.m_Capacity;
     }
 
-    NetSparseListIteratorConst itr(this, start_index);
-    return itr;
+    for (int index = 0; index <= rhs.m_HighestIndex; index++)
+    {
+      m_Values[index].m_Valid = rhs.m_Values[index].m_Valid;
+      if (rhs.m_Values[index].m_Valid)
+      {
+        new(&m_Values[index].m_Value) T(rhs.m_Values[index].m_Value);
+      }
+    }
+
+    for (int index = rhs.m_HighestIndex + 1; index < (int)m_Capacity; index++)
+    {
+      m_Values[index].m_Valid = false;
+    }
+
+    m_HighestIndex = rhs.m_HighestIndex;
   }
 
-  NetSparseListIteratorConst end() const
+  void Move(NetSparseList<T, MaxSize> && rhs)
   {
-    NetSparseListIteratorConst itr(this, m_HighestIndex + 1);
-    return itr;
+    DestroyAllElements();
+
+    if (m_Capacity > 0)
+    {
+      Deallocate(m_Values);
+    }
+
+    m_HighestIndex = rhs.m_HighestIndex;
+    m_Capacity = rhs.m_Capacity;
+    m_Values = rhs.m_Values;
+
+    rhs.m_HighestIndex = -1;
+    rhs.m_Capacity = 0;
+    rhs.m_Values = nullptr;
   }
 
-private:
+  struct ContainerData
+  {
+    bool m_Valid;
+    T m_Value;
+  };
 
-  std::vector<std::experimental::optional<T>> m_Values;
-  int m_HighestIndex = -1;
+  int m_HighestIndex;
+  std::size_t m_Capacity;
+  ContainerData * m_Values;
 };
+
 
 
 template <typename T, std::size_t MaxSize, class NetBitWriter>
@@ -313,15 +714,15 @@ struct NetSerializer<NetSparseList<T, MaxSize>, NetBitWriter>
 {
   void operator()(const NetSparseList<T, MaxSize> & val, NetBitWriter & writer)
   {
-    auto size = val.Size();
+    auto size = val.HighestIndex();
 
     std::size_t num_elements = 0;
     auto key_bits = GetRequiredBits(MaxSize);
     auto size_cursor = writer.Reserve(key_bits);
 
-    for (std::size_t index = 0; index < size; index++)
+    for (int index = 0; index <= size; index++)
     {
-      if (val.HasElementAt(index))
+      if (val.HasAt(index))
       {
         writer.WriteBits(index, key_bits);
         NetSerializeValue(val[index], writer);
@@ -357,13 +758,13 @@ struct NetSerializerDelta<NetSparseList<T, MaxSize>, NetBitWriter>
     {
       auto index_cursor = writer.Reserve(required_bits);
 
-      if (to.HasElementAt(index) && from.HasElementAt(index) == false)
+      if (to.HasAt(index) && from.HasAt(index) == false)
       {
         index_cursor.WriteBits(index, required_bits);
         NetSerializeValue(to[index], writer);
         num_wrote++;
       }
-      else if (to.HasElementAt(index) == false && from.HasElementAt(index))
+      else if (to.HasAt(index) == false && from.HasAt(index))
       {
         index_cursor.WriteBits(index, required_bits);
         writer.WriteBits(0, 1);
@@ -372,7 +773,7 @@ struct NetSerializerDelta<NetSparseList<T, MaxSize>, NetBitWriter>
       else
       {
         auto new_elem_cursor = writer.Reserve(1);
-        if (to.HasElementAt(index) == false || NetSerializeValueDelta(to[index], from[index], writer) == false)
+        if (to.HasAt(index) == false || NetSerializeValueDelta(to[index], from[index], writer) == false)
         {
           writer.RollBack(index_cursor);
         }
@@ -421,7 +822,7 @@ struct NetDeserializer<NetSparseList<T, MaxSize>, NetBitReader>
         current_index++;
       }
 
-      if (!val.HasElementAt(current_index))
+      if (!val.HasAt(current_index))
       {
         val.EmplaceAt(current_index);
       }
@@ -455,7 +856,7 @@ struct NetDeserializerDelta<NetSparseList<T, MaxSize>, NetBitReader>
     {
       auto index = reader.ReadUBits(required_bits);
 
-      if (val.HasElementAt((std::size_t)index) == false)
+      if (val.HasAt((std::size_t)index) == false)
       {
         val.EmplaceAt((std::size_t)index);
         NetDeserializeValue(val[(std::size_t)index], reader);

@@ -10,6 +10,12 @@
 
 #include <type_traits>
 
+template <typename Type>
+struct NetPolymorphicTypeInit
+{
+  
+};
+
 template <class BaseClass>
 class NetPolymorphic
 {
@@ -21,6 +27,17 @@ public:
     m_TypeHash = typeid(BaseClass).hash_code();
   }
 
+  template <typename DataType, std::enable_if_t<std::is_base_of<BaseClass, DataType>::value> * Enable = nullptr>
+  NetPolymorphic(const NetPolymorphicTypeInit<DataType> & dt)
+  {
+    auto class_id = BaseClass::__s_TypeDatabase.GetClassId(typeid(DataType).hash_code());
+    auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(class_id);
+
+    m_ClassId = class_id;
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate());
+    m_TypeHash = type_info.m_TypeIdHash;
+  }
+
   NetPolymorphic(const NetPolymorphic<BaseClass> & rhs)
   {
     auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(rhs.m_ClassId);
@@ -29,6 +46,34 @@ public:
     m_TypeHash = rhs.m_TypeHash;
 
     type_info.m_Copy(m_Ptr, rhs.m_Ptr);
+  }
+
+  NetPolymorphic(std::size_t class_id, const void * data_ptr)
+  {
+    auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(class_id);
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate());
+    m_ClassId = class_id;
+    m_TypeHash = type_info.m_TypeIdHash;
+
+    type_info.m_Copy(m_Ptr, data_ptr);
+  }
+
+  template <typename DataType, std::enable_if_t<std::is_base_of<BaseClass, DataType>::value> * Enable = nullptr>
+  NetPolymorphic(const DataType & rhs)
+  {
+    auto & type_info = BaseClass::__s_TypeDatabase.template GetTypeInfo<DataType>();
+    m_Ptr = new DataType(rhs);
+    m_ClassId = type_info.m_ClassId;
+    m_TypeHash = type_info.m_TypeIdHash;
+  }
+
+  template <typename DataType, std::enable_if_t<std::is_base_of<BaseClass, DataType>::value> * Enable = nullptr>
+  NetPolymorphic(DataType && rhs)
+  {
+    auto & type_info = BaseClass::__s_TypeDatabase.template GetTypeInfo<DataType>();
+    m_Ptr = new DataType(std::move(rhs));
+    m_ClassId = type_info.m_ClassId;
+    m_TypeHash = type_info.m_TypeIdHash;
   }
 
   ~NetPolymorphic()
@@ -63,15 +108,15 @@ public:
   }
 
   template <class Class, std::enable_if_t<std::is_base_of<BaseClass, Class>::value> * enable = nullptr>
-  void SetType()
+  void SetType(bool force = false)
   {
     auto class_id = BaseClass::__s_TypeDatabase.GetClassId(typeid(Class).hash_code());
-    SetType(class_id);
+    SetType(class_id, force);
   }
 
-  void SetType(std::size_t class_id)
+  void SetType(std::size_t class_id, bool force = false)
   {
-    if (class_id == m_ClassId)
+    if (class_id == m_ClassId && force == false)
     {
       return;
     }
@@ -88,6 +133,12 @@ public:
   std::size_t GetTypeHash() const
   {
     return m_TypeHash;
+  }
+
+  template <class T>
+  bool Is() const
+  {
+    return m_TypeHash == typeid(T).hash_code();
   }
 
   template <class T>
@@ -167,7 +218,7 @@ struct NetSerializer<NetPolymorphic<T>, NetBitWriter>
   void operator()(const NetPolymorphic<T> & val, NetBitWriter & writer)
   {
     auto & type_info = val.GetTypeInfo();
-    writer.WriteBits(val.GetClassId(), GetRequiredBits(T::__s_TypeDatabase.GetNumTypes()));
+    writer.WriteBits(val.GetClassId(), GetRequiredBits(T::__s_TypeDatabase.GetNumTypes() - 1));
     type_info.m_Serialize(val.GetBase(), writer);
   }
 };
@@ -201,7 +252,7 @@ struct NetDeserializer<NetPolymorphic<T>, NetBitReader>
 {
   void operator()(NetPolymorphic<T> & val, NetBitReader & reader)
   {
-    uint64_t class_id = reader.ReadUBits(GetRequiredBits(T::__s_TypeDatabase.GetNumTypes()));
+    uint64_t class_id = reader.ReadUBits(GetRequiredBits(T::__s_TypeDatabase.GetNumTypes() - 1));
     val.SetType(class_id);
 
     auto & type_info = val.GetTypeInfo();

@@ -13,49 +13,14 @@ NetBitWriterVector::NetBitWriterVector(int reserve_bytes) :
 
 void NetBitWriterVector::WriteBits(uint64_t val, int num_bits)
 {
-  if (num_bits <= 0)
-  {
-    return;
-  }
-
-
-#ifdef _DEBUG
-
-  if (num_bits < 64)
-  {
-    uint64_t too_large_val = (1ULL << num_bits);
-    if (val >= too_large_val)
-    {
-      NET_THROW(std::out_of_range("Not enough bits to contain the entire value"));
-      return;
-    }
-  }
-
-#endif
-
-  uint64_t free_bits = 8 - m_Bit;
-  if (free_bits == 0)
-  {
-    m_Buffer.push_back((uint8_t)val);
-    m_Bit = std::min(8, num_bits);
-    WriteBits(val >> 8, num_bits - 8);
-    return;
-  }
-
-  uint64_t free_bit_mask = (1 << free_bits) - 1;
-  uint64_t used_bit_mask = (1 << m_Bit) - 1;
-  uint64_t masked_bits = val & free_bit_mask;
-
-  m_Buffer.back() = (m_Buffer.back() & (uint8_t)used_bit_mask) | (uint8_t)(masked_bits << m_Bit);
-  m_Bit = std::min(8, m_Bit + num_bits);
-
-  WriteBits(val >> free_bits, num_bits - std::min(num_bits, (int)free_bits));
+  m_TotalBits += num_bits;
+  WriteBitsInternal(val, num_bits);
 }
 
 void NetBitWriterVector::WriteSBits(int64_t val, int num_bits)
 {
 #ifdef _DEBUG
-  uint64_t mask = (1 << num_bits) - 1;
+  uint64_t mask = (1ULL << num_bits) - 1;
   int64_t min_value = 0xFFFFFFFFFFFFFFFF ^ mask;
   int64_t max_value = ~min_value;
 
@@ -172,7 +137,7 @@ void NetBitWriterVector::WriteBuffer(void * data, std::size_t num_bytes)
 
 NetBitWriterCursor NetBitWriterVector::Reserve(int num_bits)
 {
-  NetBitWriterCursor cursor(this, &m_Buffer, m_Buffer.size() - 1, m_Bit, num_bits);
+  NetBitWriterCursor cursor(this, &m_Buffer, m_Buffer.size() - 1, m_Bit, num_bits, m_TotalBits);
   WriteBits(0, num_bits);
   return cursor;
 }
@@ -186,10 +151,57 @@ void NetBitWriterVector::RollBack(NetBitWriterCursor & cursor)
 
   m_Buffer.resize(cursor.m_Byte + 1);
   m_Bit = cursor.m_Bit;
+  m_TotalBits = cursor.m_TotalBits;
 }
 
 void NetBitWriterVector::Reset()
 {
   m_Buffer.clear();
   m_Bit = 8;
+  m_TotalBits = 0;
+}
+
+int NetBitWriterVector::GetTotalBits() const
+{
+  return m_TotalBits;
+}
+
+void NetBitWriterVector::WriteBitsInternal(uint64_t val, int num_bits)
+{
+  if (num_bits <= 0)
+  {
+    return;
+  }
+
+#ifdef _DEBUG
+
+  if (num_bits < 64)
+  {
+    uint64_t too_large_val = (1ULL << num_bits);
+    if (val >= too_large_val)
+    {
+      NET_THROW(std::out_of_range("Not enough bits to contain the entire value"));
+      return;
+    }
+  }
+
+#endif
+
+  uint64_t free_bits = 8 - m_Bit;
+  if (free_bits == 0)
+  {
+    m_Buffer.push_back((uint8_t)val);
+    m_Bit = std::min(8, num_bits);
+    WriteBitsInternal(val >> 8, num_bits - 8);
+    return;
+  }
+
+  uint64_t free_bit_mask = (1 << free_bits) - 1;
+  uint64_t used_bit_mask = (1 << m_Bit) - 1;
+  uint64_t masked_bits = val & free_bit_mask;
+
+  m_Buffer.back() = (m_Buffer.back() & (uint8_t)used_bit_mask) | (uint8_t)(masked_bits << m_Bit);
+  m_Bit = std::min(8, m_Bit + num_bits);
+
+  WriteBitsInternal(val >> free_bits, num_bits - std::min(num_bits, (int)free_bits));
 }
