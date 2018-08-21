@@ -39,6 +39,7 @@ void NetClientBackendEnet::Update()
 {
   ENetEvent e;
 
+  m_Transmitter.Update();
   while (enet_host_service(m_Host, &e, 0))
   {
     switch (e.type)
@@ -76,6 +77,8 @@ void NetClientBackendEnet::Disconnect()
   {
     return;
   }
+
+  m_Transmitter.Clear();
 
   enet_peer_disconnect(m_Transmitter.m_Peer, 0);
   enet_host_flush(m_Host);

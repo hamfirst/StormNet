@@ -6,8 +6,11 @@
 #include "NetDeserialize.h"
 #include "NetException.h"
 
-#ifndef _WEB
+#if !defined(_WEB) && !defined(_ANDROID)
 #include <xmmintrin.h>
+#include <intrin.h>  
+
+#pragma intrinsic(_mul128)  
 #endif
 
 #pragma warning(push)
@@ -15,7 +18,7 @@
 
 inline int64_t FixedPointMultiplyWide(int64_t a, int64_t b, int FractionalBits)
 {
-#if !defined(WIN32) && !defined(_LINUX) && !defined(_WEB) && !defined(STORM_REFL_PARSE)
+#if !defined(WIN32) && !defined(_LINUX) && !defined(_WEB) && !defined(_ANDROID) && !defined(STORM_REFL_PARSE)
 
   int64_t hi;
   int64_t result = _mul128(a, b, &hi);
@@ -34,9 +37,11 @@ inline int64_t FixedPointMultiplyWide(int64_t a, int64_t b, int FractionalBits)
   auto xl = a;
   auto yl = b;
 
-  auto xlo = (uint64_t)(xl & 0x00000000000FFFFF);
+  auto mask = (uint64_t)(1ULL << FractionalBits) - 1;
+
+  auto xlo = (uint64_t)(xl & mask);
   auto xhi = xl >> FractionalBits;
-  auto ylo = (uint64_t)(yl & 0x00000000000FFFFF);
+  auto ylo = (uint64_t)(yl & mask);
   auto yhi = yl >> FractionalBits;
 
   auto lolo = xlo * ylo;
@@ -80,8 +85,8 @@ inline int64_t FixedPointDivideWide(int64_t a, int64_t b, int FractionalBits)
     NET_THROW_OR(std::logic_error("Divide by zero"), return 0);
   }
 
-  int64_t max_value = 9223372036854775807ULL;
-  int64_t min_value = -9223372036854775808LL;
+  int64_t max_value = std::numeric_limits<int64_t>::max();
+  int64_t min_value = std::numeric_limits<int64_t>::min();
 
   uint64_t remainder = (uint64_t)(xl >= 0 ? xl : -xl);
   uint64_t divider = (uint64_t)(yl >= 0 ? yl : -yl);
@@ -159,47 +164,109 @@ class NetFixedPoint
 public:
   using FixedType = NetFixedPoint<StorageType, NumBits, FractionalBits>;
 
-  NetFixedPoint() = default;
-  NetFixedPoint(const FixedType & rhs) = default;
-  NetFixedPoint(FixedType && rhs) = default;
+  constexpr NetFixedPoint() = default;
+  constexpr NetFixedPoint(const FixedType & rhs) = default;
+  constexpr NetFixedPoint(FixedType && rhs) = default;
 
   FixedType & operator = (const FixedType & rhs) = default;
   FixedType & operator = (FixedType && rhs) = default;
 
-  explicit NetFixedPoint(int8_t val)
+  constexpr NetFixedPoint(int8_t val)
   {
     m_Value = (((StorageType)val) << FractionalBits);
   }
 
-  explicit NetFixedPoint(int16_t val)
+  constexpr NetFixedPoint(int16_t val)
   {
     m_Value = (((StorageType)val) << FractionalBits);
   }
 
-  explicit NetFixedPoint(int32_t val)
+  constexpr NetFixedPoint(int32_t val)
   {
     m_Value = (((StorageType)val) << FractionalBits);
   }
 
-  explicit NetFixedPoint(int64_t val)
+  constexpr NetFixedPoint(int64_t val)
   {
     m_Value = (((StorageType)val) << FractionalBits);
   }
 
-  explicit NetFixedPoint(float val)
+  explicit constexpr NetFixedPoint(const char * str)
   {
-    m_Value = ((StorageType)(val * kOne));
-  }
+    bool negative = false;
+    if (*str == '-')
+    {
+      str++;
+      negative = true;
+    }
 
-  explicit NetFixedPoint(double val)
-  {
-    m_Value = ((StorageType)(val * kOne));
+    if (*str == '+')
+    {
+      str++;
+    }
+
+    StorageType val = 0;
+    while (true)
+    {
+      if (*str < '0' || *str > '9')
+      {
+        break;
+      }
+
+      val *= 10;
+      val += *str - '0';
+
+      str++;
+    }
+
+    val <<= FractionalBits;
+
+    if (*str == '.')
+    {
+      str++;
+      StorageType dividend = 1;
+
+      while (true)
+      {
+        if (*str < '0' || *str > '9')
+        {
+          break;
+        }
+
+        auto frac = *str - '0';
+        frac <<= FractionalBits;
+
+        dividend *= 10;
+        val += (frac + (dividend >> 2)) / dividend;
+
+        str++;
+      }
+    }
+
+    m_Value = val;
+
+    if (negative)
+    {
+      m_Value = -m_Value;
+    }
   }
 
   static FixedType CreateFromRawVal(StorageType val)
   {
     FixedType f;
     f.m_Value = val;
+    return f;
+  }
+
+  static FixedType Epsilon()
+  {
+    return CreateFromRawVal(1);
+  }
+
+  static FixedType CreateFromFloat(float val)
+  {
+    FixedType f;
+    f.m_Value = (StorageType)((float)kOne * val);
     return f;
   }
 
@@ -220,7 +287,7 @@ public:
 
   operator int() const
   {
-    return m_Value >> FractionalBits;
+    return (int)(m_Value >> FractionalBits);
   }
 
   FixedType operator ++()
@@ -316,28 +383,33 @@ public:
     return m_Value <= val.m_Value;
   }
 
-  FixedType Invert()
+  FixedType operator -() const
+  {
+    return Invert();
+  }
+
+  FixedType Invert() const
   {
     return CreateFromRawVal(-m_Value);
   }
 
-  FixedType Abs()
+  FixedType Abs() const
   {
     return CreateFromRawVal(m_Value > 0 ? m_Value : -m_Value);
   }
 
-  FixedType Frac()
+  FixedType Frac() const
   {
     return CreateFromRawVal(m_Value & kFractionalMask);
   }
 
-  FixedType Floor()
+  FixedType Floor() const
   {
     auto f = Frac();
     return CreateFromRawVal(m_Value - f.m_Value);
   }
 
-  FixedType Round()
+  FixedType Round() const
   {
     auto frac = m_Value & (kFractionalMask);
     auto val = m_Value & (~kFractionalMask);
@@ -355,13 +427,13 @@ public:
     }
   }
 
-  FixedType Ceil()
+  FixedType Ceil() const
   {
     auto f = Floor();
-    return CreateFromRawVal(f.m_Value + kOne);
+    return f.m_Value != m_Value ? CreateFromRawVal(f.m_Value + kOne) : CreateFromRawVal(m_Value);
   }
 
-  int Clz()
+  int Clz() const
   {
     auto byte_mask = 0xF << (NumBits - 4);
     auto bit_mask = 0x1 << (NumBits - 1);
@@ -375,13 +447,23 @@ public:
       val <<= 4; 
     }
     
-    while ((val & bit_mask) == 0 && bits < 32) 
+    while ((val & bit_mask) == 0 && bits < 8) 
     { 
       bits += 1; 
       val <<= 1; 
     }
 
     return bits;
+  }
+
+  FixedType Min(const FixedType & m) const
+  {
+    return m_Value <= m.m_Value ? CreateFromRawVal(m_Value) : CreateFromRawVal(m.m_Value);
+  }
+
+  FixedType Max(const FixedType & m) const
+  {
+    return m_Value >= m.m_Value ? CreateFromRawVal(m_Value) : CreateFromRawVal(m.m_Value);
   }
 
   void Clamp(const FixedType & min, const FixedType & max)
@@ -396,9 +478,9 @@ public:
     }
   }
 
-  FixedType Sqrt()
+  FixedType Sqrt() const
   {
-    if (m_Value < 0)
+    if (m_Value <= 0)
     {
       return CreateFromRawVal(0);
     }
@@ -432,7 +514,7 @@ public:
     return guess_fixed;
   }
 
-  FixedType SinSlow()
+  FixedType SinSlow() const
   {
     auto one = CreateFromRawVal(kOne);
     auto val = CreateFromRawVal(m_Value);
@@ -531,7 +613,7 @@ public:
     return val;
   }
 
-  FixedType CosSlow()
+  FixedType CosSlow() const
   {
     auto one = CreateFromRawVal(kOne);
     auto val = CreateFromRawVal(kOne);
@@ -625,68 +707,81 @@ public:
     return val;
   }
 
-  FixedType AtanSlow()
+  FixedType AtanSlow() const
   {
     auto one = CreateFromRawVal(kOne);
+    auto two = one + one;
     auto val = CreateFromRawVal(m_Value);
     auto x = CreateFromRawVal(m_Value);
 
     auto div = one;
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val -= x / div; // -x^3/3
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val += x / div; // +x^5/5
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val -= x / div; // -x^7/7
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val += x / div; // +x^9/9
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val -= x / div; // -x^11/11
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val += x / div; // +x^13/13
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val -= x / div; // -x^15/15
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val += x / div; // +x^17/17
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val -= x / div; // -x^19/19
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val += x / div; // +x^21/21
 
-    div += one + one;
+    div += two;
     x *= *this;
     x *= *this;
     val -= x / div; // -x^23/23
     return val;
+  }
+
+
+  static FixedType RandomRange(const FixedType & range_low, const FixedType & range_high, StorageType rand_val)
+  {
+    auto diff = range_high.m_Value - range_low.m_Value;
+    if (diff == 0)
+    {
+      return range_low;
+    }
+
+    return CreateFromRawVal(range_low.m_Value + (rand_val % diff));
   }
 
 private:
@@ -695,6 +790,9 @@ private:
   {
     m_Value = (val & kMask);
   }
+
+  template <typename LutStorageType, LutStorageType LutNumBits, LutStorageType LutFractionalBits>
+  friend class NetFixedPointLUT;
 
   static const StorageType kMask = NumBits >= sizeof(StorageType) ? StorageType(-1) : ((StorageType(1) << NumBits) - 1);
   static const StorageType kFractionalMask = (StorageType(1) << FractionalBits) - 1;

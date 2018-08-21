@@ -101,6 +101,19 @@ public:
     RegisterCallbackInteral<DataType, decltype(callback_func)>(callback_func);
   }
 
+  template <typename DataType>
+  void RegisterCallback(void(*func)(DataType &&))
+  {
+    RegisterCallbackInteral<DataType, decltype(func)>(func);
+  }
+
+  template <typename C, typename DataType>
+  void RegisterCallback(void(C::*func)(DataType &&), C * c)
+  {
+    auto callback_func = [=](DataType && data) { (c->*func)(data); };
+    RegisterCallbackInteral<DataType, decltype(callback_func)>(callback_func);
+  }
+
   template <typename DataType, typename Callback>
   void RegisterCallback(Callback callback)
   {
@@ -139,6 +152,8 @@ public:
       auto & type_info = type_db.GetTypeInfo(class_id);
       auto ptr = type_info.m_HeapCreate();
       type_info.m_Deserialize(ptr, reader);
+
+      m_GenericCallback(class_id, ptr);
 
       type_info.m_HeapDestroy(ptr);
     }

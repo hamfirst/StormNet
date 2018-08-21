@@ -3,6 +3,7 @@
 #include "NetClientBackend.h"
 #include "NetClientInterface.h"
 #include "NetProtocol.h"
+#include "NetException.h"
 
 #include "optional/optional.hpp"
 
@@ -55,11 +56,19 @@ protected:
   virtual void GotMessage(NetBitReader & reader, bool ack, int channel_index) override
   {
     m_Protocol->GotMessage(reader, ack, channel_index);
+    if (reader.IsEmpty() == false)
+    {
+      NET_THROW(std::runtime_error("Not all data from packet was consumed"));
+    }
   }
 
   virtual void GotMessage(NetBitReader & reader) override
   {
     m_Protocol->GotMessage(reader);
+    if (reader.IsEmpty() == false)
+    {
+      NET_THROW(std::runtime_error("Not all data from packet was consumed"));
+    }
   }
 
 private:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <new>
 
 #include "NetReflectionCommon.h"
 #include "NetException.h"
@@ -103,7 +104,10 @@ public:
       return m_Values.back();
     }
 
-    m_Values.emplace(m_Values.begin() + logical_index, std::forward<Args>(args)...);
+    auto ptr = &m_Values[logical_index];
+    ptr->~T();
+    new (ptr) T(std::forward<Args>(args)...);
+
     return m_Values[logical_index];
   }
 
@@ -142,6 +146,16 @@ public:
     return m_Values.end();
   }
 
+  auto data()
+  {
+    return m_Values.data();
+  }
+
+  auto data() const
+  {
+    return m_Values.data();
+  }
+
   void push_back(const T & val)
   {
     PushBack(val);
@@ -154,7 +168,7 @@ public:
 
   void resize(std::size_t new_size)
   {
-    if (new_size >= MaxSize)
+    if (new_size > MaxSize)
     {
       NET_THROW(std::runtime_error("NetArrayList overflow"));
     }
@@ -175,7 +189,7 @@ public:
       NET_THROW(std::runtime_error("NetArrayList overflow"));
     }
 
-    return m_Values.emplace(std::forward<Args>(args)...);
+    return m_Values.emplace_back(std::forward<Args>(args)...);
   }
   
   template <class Itr>
@@ -187,6 +201,18 @@ public:
     }
 
     return m_Values.insert(pos, val);
+  }
+
+  template <class Itr>
+  auto erase(Itr pos)
+  {
+    return m_Values.erase(pos);
+  }
+
+  template <class Itr>
+  auto erase(Itr pos, Itr end)
+  {
+    return m_Values.erase(pos, end);
   }
 
   template <class Itr, class... Args>
@@ -289,15 +315,7 @@ struct NetDeserializer<NetArrayList<T, MaxSize>, NetBitReader>
   void operator()(NetArrayList<T, MaxSize> & val, NetBitReader & reader)
   {
     auto size = reader.ReadUBits(GetRequiredBits(MaxSize));
-    while (val.size() < size)
-    {
-      val.EmplaceBack();
-    }
-
-    while (val.size() > size)
-    {
-      val.RemoveAt(val.size() - 1);
-    }
+    val.resize(size);
 
     for (std::size_t index = 0; index < size; index++)
     {
