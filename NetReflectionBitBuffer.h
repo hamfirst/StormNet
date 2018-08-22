@@ -19,7 +19,7 @@ public:
   bool ReadData(T & t)
   {
     NetDeserializer<T, NetBitReaderBuffer> d;
-    d(t, m_DataWriter);
+    d(t, m_DataReader);
     return true;
   }
 
