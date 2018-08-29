@@ -252,7 +252,10 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\External;$(SolutionDir)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+<<<<<<< HEAD
       <LanguageStandard>stdcpplatest</LanguageStandard>
+=======
+>>>>>>> 82abf53995350c7136a2b761bbb2fb350eacf404
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
