@@ -8,18 +8,9 @@
 
 #if !defined(_WEB) && !defined(_ANDROID)
 #include <xmmintrin.h>
-<<<<<<< HEAD
 #include <intrin.h>  
 
 #pragma intrinsic(_mul128)  
-=======
-
-#ifdef _MSC_VER
-#include <intrin.h>  
-#pragma intrinsic(_mul128)  
-#endif
-
->>>>>>> 82abf53995350c7136a2b761bbb2fb350eacf404
 #endif
 
 #pragma warning(push)
