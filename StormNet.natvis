@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  
+  <Type Name="NetFixedPoint&lt;*&gt;">
+    <DisplayString>{{ val={(float)m_Value / (float)kOne} }}</DisplayString>
+    <Expand>
+    </Expand>
+  </Type>
+
+  <Type Name="NetOptional&lt;*&gt;">
+    <DisplayString>{{ valid={ m_Valid } }</DisplayString>
+    <Expand>
+      <Item Name="[val]" ExcludeView="simple">*(($T1 *)m_Buffer)</Item>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>
