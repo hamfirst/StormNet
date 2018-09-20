@@ -81,6 +81,11 @@ public:
     return StormReflGetEnumAsString(m_Value);
   }
 
+  EnumType ToEnum() const
+  {
+    return m_Value;
+  }
+
   bool operator == (EnumType val) const
   {
     return m_Value == val;

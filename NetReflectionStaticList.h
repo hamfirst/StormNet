@@ -9,14 +9,13 @@
 #include "NetDeserialize.h"
 #include "NetDeserializeDelta.h"
 
-template <typename DataType, const std::vector<DataType> * DataList>
+template <typename DataType, const DataType * DataList, const int * DataSize>
 class NetReflectionStaticListPtr
 {
 public:
-    NetReflectionStaticListPtr();
-
-    NetReflectionStaticListPtr(const NetReflectionStaticListPtr<DataType, DataList> & rhs) = default;
-    NetReflectionStaticListPtr & operator = (const NetReflectionStaticListPtr<DataType, DataList> & rhs) = default;
+    NetReflectionStaticListPtr() = default;
+    NetReflectionStaticListPtr(const NetReflectionStaticListPtr<DataType, DataList, DataSize> & rhs) = default;
+    NetReflectionStaticListPtr & operator = (const NetReflectionStaticListPtr<DataType, DataList, DataSize> & rhs) = default;
     
     NetReflectionStaticListPtr & operator = (const DataType & val)
     {
@@ -25,9 +24,9 @@ public:
 
     NetReflectionStaticListPtr & operator = (const DataType * val)
     {
-        for(int index = 0; index < static_cast<int>(DataList->size()); ++index)
+        for(int index = 0; index < *DataSize; ++index)
         {
-            auto elem = &DataList->at(index);
+            auto elem = &DataList[index];
             if(val == elem)
             {
                 m_CurrentIndex = index;
@@ -41,22 +40,22 @@ public:
 
     const DataType & operator * () const
     {
-        return DataList->at(m_CurrentIndex);
+        return DataList[m_CurrentIndex];
     }
 
     const DataType * operator -> () const
     {
-        return &DataList->at(m_CurrentIndex);
+        return &DataList[m_CurrentIndex];
     }
 
     operator const DataType * () const
     {
-        return &DataList->at(m_CurrentIndex);
+        return &DataList[m_CurrentIndex];
     }
 
     const DataType & Value() const
     {
-        return DataList->at(m_CurrentIndex);
+        return DataList[m_CurrentIndex];
     }
 
     int CurrentIndex() const
@@ -64,7 +63,7 @@ public:
         return m_CurrentIndex;
     }
 
-    bool operator == (const NetReflectionStaticListPtr<DataType, DataList> & rhs) const
+    bool operator == (const NetReflectionStaticListPtr<DataType, DataList, DataSize> & rhs) const
     {
         return m_CurrentIndex == rhs.m_CurrentIndex;
     }
@@ -73,22 +72,22 @@ private:
     int m_CurrentIndex = 0;
 };
 
-template <typename DataType, const std::vector<DataType> * DataList, class NetBitWriter>
-struct NetSerializer<NetReflectionStaticListPtr<DataType, DataList>, NetBitWriter>
+template <typename DataType, const DataType * DataList, const int * DataSize, class NetBitWriter>
+struct NetSerializer<NetReflectionStaticListPtr<DataType, DataList, DataSize>, NetBitWriter>
 {
-  void operator()(const NetReflectionStaticListPtr<DataType, DataList> & val, NetBitWriter & writer)
+  void operator()(const NetReflectionStaticListPtr<DataType, DataList, DataSize> & val, NetBitWriter & writer)
   {
-      auto required_bits = GetRequiredBits(DataList->size());
+      auto required_bits = GetRequiredBits(*DataSize);
       writer.WriteBits(val.CurrentIndex(), required_bits);
   }
 };
 
-template <typename DataType, const std::vector<DataType> * DataList, class NetBitReader>
-struct NetDeserializer<NetReflectionStaticListPtr<DataType, DataList>, NetBitReader>
+template <typename DataType, const DataType * DataList, const int * DataSize, class NetBitReader>
+struct NetDeserializer<NetReflectionStaticListPtr<DataType, DataList, DataSize>, NetBitReader>
 {
-  void operator()(NetReflectionStaticListPtr<DataType, DataList> & val, NetBitReader & reader)
+  void operator()(NetReflectionStaticListPtr<DataType, DataList, DataSize> & val, NetBitReader & reader)
   {
-      auto required_bits = GetRequiredBits(DataList->size());
-      val = DataList->at(reader.ReadUBits(required_bits));
+      auto required_bits = GetRequiredBits(*DataSize);
+      val = DataList[reader.ReadUBits(required_bits)];
   }
 };

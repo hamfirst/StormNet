@@ -20,6 +20,8 @@ public:
 
   uint32_t GetSeed() const;
 
+  uint32_t operator ()();
+
 protected:
 
   uint32_t m_State;

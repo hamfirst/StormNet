@@ -74,3 +74,8 @@ uint32_t NetRandom::GetSeed() const
 {
   return m_State;
 }
+
+uint32_t NetRandom::operator ()()
+{
+  return GetRandom();
+}
