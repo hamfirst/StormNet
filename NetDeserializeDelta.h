@@ -55,7 +55,7 @@ private:
   int m_RequiredBits;
 };
 
-template <class Type, class NetBitReader, std::enable_if_t<StormReflCheckReflectable<Type>::value == false && std::is_standard_layout<Type>::value> * enable = nullptr>
+template <class Type, class NetBitReader, std::enable_if_t<StormReflCheckReflectable<Type>::value == false && std::is_trivially_copyable<Type>::value> * enable = nullptr>
 void NetDeserializeDeltaType(Type & val, NetBitReader & reader)
 {
   NetDeserializeValue(val, reader);
