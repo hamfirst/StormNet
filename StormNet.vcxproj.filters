@@ -134,6 +134,7 @@
     <ClInclude Include="NetReflectionBitBuffer.h">
       <Filter>Reflection</Filter>
     </ClInclude>
+    <ClInclude Include="NetReflectionStaticList.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetBitReader.cpp" />
