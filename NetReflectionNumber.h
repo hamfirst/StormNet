@@ -255,7 +255,7 @@ private:
   NumericType m_Value;
 };
 
-template <class NumericType, NumericType Min, NumericType Max, class NetBitWriter>
+template <typename NumericType, NumericType Min, NumericType Max, typename NetBitWriter>
 struct NetSerializer<NetRangedNumber<NumericType, Min, Max>, NetBitWriter>
 {
   void operator()(const NetRangedNumber<NumericType, Min, Max> & val, NetBitWriter & writer)
@@ -265,7 +265,7 @@ struct NetSerializer<NetRangedNumber<NumericType, Min, Max>, NetBitWriter>
   }
 };
 
-template <class NumericType, NumericType Min, NumericType Max, class NetBitReader>
+template <typename NumericType, NumericType Min, NumericType Max, typename NetBitReader>
 struct NetDeserializer<NetRangedNumber<NumericType, Min, Max>, NetBitReader>
 {
   void operator()(NetRangedNumber<NumericType, Min, Max> & val, NetBitReader & reader)

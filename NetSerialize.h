@@ -65,3 +65,15 @@ struct NetSerializer<bool, NetBitWriter>
   }
 };
 
+template <class Type, int Size, class NetBitWriter>
+struct NetSerializer<Type[Size], NetBitWriter>
+{
+  void operator()(const Type (&val)[Size], NetBitWriter & writer)
+  {
+    for(int index = 0; index < Size; ++index)
+    {
+      NetSerializer<Type, NetBitWriter> serializer;
+      serializer(val[index], writer);
+    }
+  }
+};

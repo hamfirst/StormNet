@@ -15,6 +15,7 @@
 #include "NetReflectionList.h"
 #include "NetReflectionMap.h"
 #include "NetReflectionBitBuffer.h"
+#include "NetReflectionStaticList.h"
 
 // Full list of types
 // bool
@@ -34,6 +35,7 @@
 // NetList
 // NetMap
 // NetReflectionBitBuffer
+// NetReflectionStaticListPtr
 
 template <class T, std::size_t MaxVal>
 using NetHashMap16 = NetMap<uint16_t, T, MaxVal>;

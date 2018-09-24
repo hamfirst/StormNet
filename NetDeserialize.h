@@ -63,3 +63,16 @@ struct NetDeserializer<bool, NetBitReader>
     val = reader.ReadUBits(1) != 0;
   }
 };
+
+template <class Type, int Size, class NetBitReader>
+struct NetDeserializer<Type[Size], NetBitReader>
+{
+  void operator()(Type (&val)[Size], NetBitReader & reader)
+  {
+    for(int index = 0; index < Size; ++index)
+    {
+      NetDeserializer<Type, NetBitReader> deserializer;
+      deserializer(val[index], reader);
+    }
+  }
+};
