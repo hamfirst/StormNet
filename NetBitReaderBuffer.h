@@ -12,11 +12,11 @@ public:
   NetBitReaderBuffer & operator = (const NetBitReaderBuffer & rhs) = default;
   NetBitReaderBuffer & operator = (NetBitReaderBuffer && rhs) = default;
 
-  uint64_t ReadUBits(int num_bits);
-  int64_t ReadSBits(int num_bits);
+  uint64_t ReadUBits(int num_bits) override;
+  int64_t ReadSBits(int num_bits) override;
 
-  void ReadBuffer(void * buffer, std::size_t num_bytes);
-  bool IsEmpty();
+  void ReadBuffer(void * buffer, std::size_t num_bytes) override;
+  bool IsEmpty() override;
 
 private:
   uint64_t ReadBitsInternal(int num_bits);
