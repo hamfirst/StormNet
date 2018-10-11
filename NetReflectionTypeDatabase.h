@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <typeinfo>
+#include <cstddef>
 
 #include <hash/Hash.h>
 
