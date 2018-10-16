@@ -33,6 +33,11 @@ void NetDeserializeType(Type & val, NetBitReader && reader)
 template <typename Type, class NetBitReader, typename std::enable_if<StormReflCheckReflectable<Type>::value>::type * = nullptr>
 void NetDeserializeType(Type & val, NetBitReader && reader)
 {
+  auto parent_obj = reader.GetParentObjectRaw();
+  auto parent_cast = reader.GetParentObjectCast();
+
+  reader.SetParentObject(&val);
+
   auto deserialize_visitor = [&](auto f) 
   {
     using FieldMetaInfo = typename std::template decay_t<decltype(f)>;
@@ -43,7 +48,9 @@ void NetDeserializeType(Type & val, NetBitReader && reader)
 
     NetDeserializeValue(f.Get(), reader); 
   };
+
   StormReflVisitEach(val, deserialize_visitor);
+  reader.SetParentObject(parent_obj, parent_cast);
 };
 
 template <typename Type, class NetBitReader>
