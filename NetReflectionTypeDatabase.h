@@ -31,6 +31,8 @@ public:\
     reg.m_TypeInfo.m_DeserializeDelta = [](void * val, NetBitReader & reader) { NetDeserializeValueDelta<ClassName>(*static_cast<ClassName *>(val), reader); }; \
     reg.m_TypeInfo.m_Compare = [](const void * val1, const void * val2) { return StormReflCompare(*static_cast<const ClassName *>(val1), *static_cast<const ClassName *>(val2)); }; \
     reg.m_TypeInfo.m_Copy = [](void * val1, const void * val2) { (*static_cast<ClassName *>(val1)) = (*static_cast<const ClassName *>(val2)); }; \
+    reg.m_TypeInfo.m_Cast = static_cast<void * (*)(std::size_t, void *)>(StormReflTypeInfo<ClassName>::CastFromTypeIdHash); \
+    reg.m_TypeInfo.m_ConstCast = static_cast<const void * (*)(std::size_t, const void *)>(StormReflTypeInfo<ClassName>::CastFromTypeIdHash); \
     TypeDb.AddClass(&reg, TypeList); \
    } }; static _s_reg##ClassName _s_regInst##ClassName;
 
@@ -51,6 +53,8 @@ public:\
     reg.m_TypeInfo.m_DeserializeDelta = [](void * val, NetBitReader & reader) { NetDeserializeValueDelta<ClassName>(*static_cast<ClassName *>(val), reader); }; \
     reg.m_TypeInfo.m_Compare = [](const void * val1, const void * val2) { return StormReflCompare(*static_cast<const ClassName *>(val1), *static_cast<const ClassName *>(val2)); }; \
     reg.m_TypeInfo.m_Copy = [](void * val1, const void * val2) { (*static_cast<ClassName *>(val1)) = (*static_cast<const ClassName *>(val2)); }; \
+    reg.m_TypeInfo.m_Cast = static_cast<void * (*)(std::size_t, void *)>(StormReflTypeInfo<ClassName>::CastFromTypeIdHash); \
+    reg.m_TypeInfo.m_ConstCast = static_cast<const void * (*)(std::size_t, const void *)>(StormReflTypeInfo<ClassName>::CastFromTypeIdHash); \
     TypeDb.AddClass(&reg, TypeList); \
    } }; static _s_reg##ClassName _s_regInst##ClassName;
 
@@ -93,6 +97,9 @@ struct NetTypeInfo
   void (*m_DeserializeDelta)(void * val, NetBitReader & reader);
   bool (*m_Compare)(const void * val1, const void * val2);
   void (*m_Copy)(void * val1, const void * val2);
+
+  void * (*m_Cast)(std::size_t type_id_hash, void * ptr);
+  const void * (*m_ConstCast)(std::size_t type_id_hash, const void * ptr);
 };
 
 struct NetTypeRegistrationInfo

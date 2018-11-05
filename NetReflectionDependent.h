@@ -67,7 +67,7 @@ struct NetDeserializer<NetReflectionDependent<ValueType, ParentType, Serializer>
 {
   void operator()(NetReflectionDependent<ValueType, ParentType, Serializer> & val, NetBitReader & reader)
   {
-    auto parent = writer.GetParentObjectAs<ParentType>();
+    auto parent = reader.GetParentObjectAs<ParentType>();
     if (parent == nullptr)
     {
       NET_THROW(std::runtime_error("Could not properly cast parent to depenedent serializer type"));

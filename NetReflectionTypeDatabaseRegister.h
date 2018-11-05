@@ -27,6 +27,8 @@ void NetInitializeTypeRegistration(NetTypeRegistrationInfo & reg)
   reg.m_TypeInfo.m_DeserializeDelta = [](void * val, NetBitReader & reader) { NetDeserializeValueDelta<RegType>(*static_cast<RegType *>(val), reader); };
   reg.m_TypeInfo.m_Compare = [](const void * val1, const void * val2) { return StormReflCompare(*static_cast<const RegType *>(val1), *static_cast<const RegType *>(val2)); };
   reg.m_TypeInfo.m_Copy = [](void * val1, const void * val2) { (*static_cast<RegType *>(val1)) = (*static_cast<const RegType *>(val2)); };
+  reg.m_TypeInfo.m_Cast = static_cast<void * (*)(std::size_t, void *)>(StormReflTypeInfo<RegType>::CastFromTypeIdHash);
+  reg.m_TypeInfo.m_ConstCast = static_cast<const void * (*)(std::size_t, const void *)>(StormReflTypeInfo<RegType>::CastFromTypeIdHash);
 }
 
 template <typename ChildType, typename BaseType>

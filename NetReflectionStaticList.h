@@ -9,13 +9,15 @@
 #include "NetDeserialize.h"
 #include "NetDeserializeDelta.h"
 
-template <typename DataType, const DataType * DataList, const int * DataSize>
+
+
+template <typename DataType, DataType * const * DataList, const int * DataSize, bool DelegateDereference = false>
 class NetReflectionStaticListPtr
 {
 public:
     NetReflectionStaticListPtr() = default;
-    NetReflectionStaticListPtr(const NetReflectionStaticListPtr<DataType, DataList, DataSize> & rhs) = default;
-    NetReflectionStaticListPtr & operator = (const NetReflectionStaticListPtr<DataType, DataList, DataSize> & rhs) = default;
+    NetReflectionStaticListPtr(const NetReflectionStaticListPtr<DataType, DataList, DataSize, DelegateDereference> & rhs) = default;
+    NetReflectionStaticListPtr & operator = (const NetReflectionStaticListPtr<DataType, DataList, DataSize, DelegateDereference> & rhs) = default;
     
     NetReflectionStaticListPtr & operator = (const DataType & val)
     {
@@ -26,7 +28,7 @@ public:
     {
         for(int index = 0; index < *DataSize; ++index)
         {
-            auto elem = &DataList[index];
+            auto elem = &(*DataList)[index];
             if(val == elem)
             {
                 m_CurrentIndex = index;
@@ -40,22 +42,29 @@ public:
 
     const DataType & operator * () const
     {
-        return DataList[m_CurrentIndex];
+        return (*DataList)[m_CurrentIndex];
     }
 
-    const DataType * operator -> () const
+    decltype(auto) operator -> () const
     {
-        return &DataList[m_CurrentIndex];
+        if constexpr(DelegateDereference)
+        {
+            return (*DataList)[m_CurrentIndex];
+        }
+        else
+        {
+            return &(*DataList)[m_CurrentIndex];
+        }
     }
 
     operator const DataType * () const
     {
-        return &DataList[m_CurrentIndex];
+        return &(*DataList)[m_CurrentIndex];
     }
 
     const DataType & Value() const
     {
-        return DataList[m_CurrentIndex];
+        return (*DataList)[m_CurrentIndex];
     }
 
     int CurrentIndex() const
@@ -72,7 +81,7 @@ private:
     int m_CurrentIndex = 0;
 };
 
-template <typename DataType, const DataType * DataList, const int * DataSize, class NetBitWriter>
+template <typename DataType, const DataType ** DataList, const int * DataSize, class NetBitWriter>
 struct NetSerializer<NetReflectionStaticListPtr<DataType, DataList, DataSize>, NetBitWriter>
 {
   void operator()(const NetReflectionStaticListPtr<DataType, DataList, DataSize> & val, NetBitWriter & writer)
@@ -82,7 +91,7 @@ struct NetSerializer<NetReflectionStaticListPtr<DataType, DataList, DataSize>, N
   }
 };
 
-template <typename DataType, const DataType * DataList, const int * DataSize, class NetBitReader>
+template <typename DataType, const DataType ** DataList, const int * DataSize, class NetBitReader>
 struct NetDeserializer<NetReflectionStaticListPtr<DataType, DataList, DataSize>, NetBitReader>
 {
   void operator()(NetReflectionStaticListPtr<DataType, DataList, DataSize> & val, NetBitReader & reader)
