@@ -45,6 +45,22 @@ public:
         return (*DataList)[m_CurrentIndex];
     }
 
+    template <typename ValType>
+    void SetTo(ValType && val)
+    {
+      for(int index = 0; index < *DataSize; ++index)
+      {
+        auto & elem = (*DataList)[index];
+        if(elem == val)
+        {
+          m_CurrentIndex = index;
+          return;
+        }
+      }
+
+      NET_THROW(std::out_of_range("Element does not exist in the list"));
+    }
+
     decltype(auto) operator -> () const
     {
         if constexpr(DelegateDereference)
