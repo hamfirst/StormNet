@@ -14,4 +14,34 @@
     </Expand>
   </Type>
 
+  <Type Name="NetOptional&lt;*&gt;">
+    <DisplayString>{{ valid={ m_Valid } }</DisplayString>
+    <Expand>
+      <Item Name="[val]" ExcludeView="simple">*(($T1 *)m_Buffer)</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="NetArrayList&lt;*,*&gt;">
+    <Expand>
+      <Item Name="[values]" ExcludeView="simple">m_Values</Item>
+    </Expand>
+  </Type>
+  
+  <Type Name="NetSparseList&lt;*,*&gt;">
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">m_HighestIndex + 1</Item>
+      <Item Name="[capacity]" ExcludeView="simple">m_Capacity</Item>
+      <ArrayItems>
+        <Size>m_HighestIndex + 1</Size>
+        <ValuePointer>m_Values</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="NetEnum&lt;*&gt;">
+    <Expand>
+      <Item Name="[val]" ExcludeView="simple">m_Values</Item>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>

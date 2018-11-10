@@ -17,7 +17,10 @@ void NetDeserializeValue(Type & t, NetBitReader && reader)
   s(t, reader);
 }
 
-template <class Type, class NetBitReader, std::enable_if_t<StormReflCheckReflectable<Type>::value == false && std::is_trivially_copyable<Type>::value> * enable = nullptr>
+template <class Type, class NetBitReader, std::enable_if_t<
+  StormReflCheckReflectable<Type>::value == false && 
+  std::is_trivially_copyable<Type>::value &&
+  std::is_pod<Type>::value> * enable = nullptr>
 void NetDeserializeType(Type & val, NetBitReader && reader)
 {
   char * mem_ptr = (char *)&val;

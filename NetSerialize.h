@@ -18,7 +18,10 @@ void NetSerializeValue(const Type & t, NetBitWriter & writer)
   s(t, writer);
 }
 
-template <class Type, class NetBitWriter, std::enable_if_t<StormReflCheckReflectable<Type>::value == false && std::is_trivially_copyable<Type>::value> * enable = nullptr>
+template <class Type, class NetBitWriter, std::enable_if_t<
+  StormReflCheckReflectable<Type>::value == false && 
+  std::is_trivially_copyable<Type>::value && 
+  std::is_pod<Type>::value> * enable = nullptr>
 void NetSerializeType(const Type & val, NetBitWriter & writer)
 {
   const char * mem_ptr = (const char *)&val;

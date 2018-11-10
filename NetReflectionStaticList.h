@@ -97,20 +97,20 @@ private:
     int m_CurrentIndex = 0;
 };
 
-template <typename DataType, const DataType ** DataList, const int * DataSize, class NetBitWriter>
-struct NetSerializer<NetReflectionStaticListPtr<DataType, DataList, DataSize>, NetBitWriter>
+template <typename DataType, DataType * const * DataList, const int * DataSize, bool DelegateDereference, class NetBitWriter>
+struct NetSerializer<NetReflectionStaticListPtr<DataType, DataList, DataSize, DelegateDereference>, NetBitWriter>
 {
-  void operator()(const NetReflectionStaticListPtr<DataType, DataList, DataSize> & val, NetBitWriter & writer)
+  void operator()(const NetReflectionStaticListPtr<DataType, DataList, DataSize, DelegateDereference> & val, NetBitWriter & writer)
   {
       auto required_bits = GetRequiredBits(*DataSize);
       writer.WriteBits(val.CurrentIndex(), required_bits);
   }
 };
 
-template <typename DataType, const DataType ** DataList, const int * DataSize, class NetBitReader>
-struct NetDeserializer<NetReflectionStaticListPtr<DataType, DataList, DataSize>, NetBitReader>
+template <typename DataType, DataType * const * DataList, const int * DataSize, bool DelegateDereference, class NetBitReader>
+struct NetDeserializer<NetReflectionStaticListPtr<DataType, DataList, DataSize, DelegateDereference>, NetBitReader>
 {
-  void operator()(NetReflectionStaticListPtr<DataType, DataList, DataSize> & val, NetBitReader & reader)
+  void operator()(NetReflectionStaticListPtr<DataType, DataList, DataSize, DelegateDereference> & val, NetBitReader & reader)
   {
       auto required_bits = GetRequiredBits(*DataSize);
       val = DataList[reader.ReadUBits(required_bits)];

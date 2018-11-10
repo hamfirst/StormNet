@@ -85,10 +85,14 @@ set(GENERIC_HEADER_StormNet
             NetDeserializeDelta.h
             NetTransmitterMemory.h
             NetReflectionSparseList.h
-  NetReflectionDependent.h)
+            NetReflectionDependent.h)
+           
 
 add_library(StormNet STATIC ${GENERIC_SRC_StormNet} ${GENERIC_HEADER_StormNet})
 
+if(MSVC)
+  target_sources(StormNet INTERFACE $<INSTALL_INTERFACE:StormNet.natvis> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/StormNet.natvis>)
+endif()
 
 if(NOT WEB)
 
