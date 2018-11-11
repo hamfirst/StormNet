@@ -6,6 +6,8 @@
 
 #include <hash/Hash.h>
 
+#include "NetPoolAllocator.h"
+
 #define NET_INVALID_TYPE_HASH 0
 #define NET_INVALID_CLASS_ID 0x7FFFFFFF
 
@@ -17,14 +19,16 @@ public:\
 #define NET_REGISTER_TYPE_IMPL(ClassName, ParentTypeHash, TypeDb, TypeList) \
   class _s_reg##ClassName { public: _s_reg##ClassName() { \
     static NetTypeRegistrationInfo reg; \
+    static NetPoolAllocator<ClassName> alloc; \
     reg.m_TypeInfo.m_ClassName = #ClassName; \
     reg.m_TypeInfo.m_Abstract = false; \
     reg.m_TypeInfo.m_TypeNameHash = crc32(#ClassName); \
     reg.m_TypeInfo.m_TypeIdHash = typeid(ClassName).hash_code(); \
     reg.m_TypeInfo.m_ParentIdHash = ParentTypeHash; \
     reg.m_TypeInfo.m_ParentClassId = NET_INVALID_CLASS_ID; \
-    reg.m_TypeInfo.m_HeapCreate = []() -> void * { return new ClassName(); }; \
-    reg.m_TypeInfo.m_HeapDestroy = [](void * ptr) { delete static_cast<ClassName *>(ptr); }; \
+    reg.m_TypeInfo.m_Allocator = &alloc; \
+    reg.m_TypeInfo.m_HeapCreate = [](void * alloc) -> void * { auto alloc_ptr = static_cast<NetPoolAllocator<ClassName> *>(alloc); return alloc_ptr->Allocate(); }; \
+    reg.m_TypeInfo.m_HeapDestroy = [](void * ptr, void * alloc) { auto alloc_ptr = static_cast<NetPoolAllocator<ClassName> *>(alloc); alloc_ptr->Deallocate(static_cast<ClassName *>(ptr)); }; \
     reg.m_TypeInfo.m_Serialize = [](const void * val, NetBitWriter & writer) { NetSerializeValue<ClassName>(*static_cast<const ClassName *>(val), writer); }; \
     reg.m_TypeInfo.m_SerializeDelta = [](const void * val, const void * compare, NetBitWriter & writer) { return NetSerializeValueDelta<ClassName>(*static_cast<const ClassName *>(val), *static_cast<const ClassName *>(compare), writer); }; \
     reg.m_TypeInfo.m_Deserialize = [](void * val, NetBitReader & reader) { NetDeserializeValue<ClassName>(*static_cast<ClassName *>(val), reader); }; \
@@ -45,8 +49,9 @@ public:\
     reg.m_TypeInfo.m_TypeIdHash = typeid(ClassName).hash_code(); \
     reg.m_TypeInfo.m_ParentIdHash = ParentTypeHash; \
     reg.m_TypeInfo.m_ParentClassId = NET_INVALID_CLASS_ID; \
-    reg.m_TypeInfo.m_HeapCreate = []() -> void * { return nullptr; }; \
-    reg.m_TypeInfo.m_HeapDestroy = [](void * ptr) { }; \
+    reg.m_TypeInfo.m_Allocator = nullptr; \
+    reg.m_TypeInfo.m_HeapCreate = [](void * alloc) -> void * { return nullptr; }; \
+    reg.m_TypeInfo.m_HeapDestroy = [](void * ptr, void * alloc) { }; \
     reg.m_TypeInfo.m_Serialize = [](const void * val, NetBitWriter & writer) { NetSerializeValue<ClassName>(*static_cast<const ClassName *>(val), writer); }; \
     reg.m_TypeInfo.m_SerializeDelta = [](const void * val, const void * compare, NetBitWriter & writer) { return NetSerializeValueDelta<ClassName>(*static_cast<const ClassName *>(val), *static_cast<const ClassName *>(compare), writer); }; \
     reg.m_TypeInfo.m_Deserialize = [](void * val, NetBitReader & reader) { NetDeserializeValue<ClassName>(*static_cast<ClassName *>(val), reader); }; \
@@ -87,10 +92,11 @@ struct NetTypeInfo
   std::size_t m_ParentClassId;
   std::size_t m_ClassId;
 
+  void * m_Allocator;
   bool m_Abstract;
 
-  void * (*m_HeapCreate)();
-  void (*m_HeapDestroy)(void * val);
+  void * (*m_HeapCreate)(void * alloc);
+  void (*m_HeapDestroy)(void * val, void * alloc);
   void (*m_Serialize)(const void * val, NetBitWriter & writer);
   bool (*m_SerializeDelta)(const void * val, const void * compare, NetBitWriter & writer);
   void (*m_Deserialize)(void * val, NetBitReader & reader);

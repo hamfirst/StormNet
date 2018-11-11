@@ -150,12 +150,12 @@ public:
     else if (m_GenericCallback)
     {
       auto & type_info = type_db.GetTypeInfo(class_id);
-      auto ptr = type_info.m_HeapCreate();
+      auto ptr = type_info.m_HeapCreate(type_info.m_Allocator);
       type_info.m_Deserialize(ptr, reader);
 
       m_GenericCallback(class_id, ptr);
 
-      type_info.m_HeapDestroy(ptr);
+      type_info.m_HeapDestroy(ptr, type_info.m_Allocator);
     }
   }
 

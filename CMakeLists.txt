@@ -85,7 +85,7 @@ set(GENERIC_HEADER_StormNet
             NetDeserializeDelta.h
             NetTransmitterMemory.h
             NetReflectionSparseList.h
-            NetReflectionDependent.h)
+            NetReflectionDependent.h NetPoolAllocator.h)
            
 
 add_library(StormNet STATIC ${GENERIC_SRC_StormNet} ${GENERIC_HEADER_StormNet})

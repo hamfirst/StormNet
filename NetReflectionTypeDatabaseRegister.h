@@ -9,18 +9,22 @@
 #include "NetDeserialize.h"
 #include "NetDeserializeDelta.h"
 #include "NetReflectionTypeDatabase.h"
+#include "NetPoolAllocator.h"
 
 
 template <typename RegType>
 void NetInitializeTypeRegistration(NetTypeRegistrationInfo & reg)
 {
+  static NetPoolAllocator<RegType> s_Allocator;
+
   reg.m_TypeInfo.m_ClassName = StormReflTypeInfo<RegType>::GetName();
   reg.m_TypeInfo.m_Abstract = false;
   reg.m_TypeInfo.m_TypeIdHash = typeid(RegType).hash_code();
   reg.m_TypeInfo.m_ParentIdHash = NET_INVALID_TYPE_HASH;
   reg.m_TypeInfo.m_ParentClassId = NET_INVALID_CLASS_ID;
-  reg.m_TypeInfo.m_HeapCreate = []() -> void * { return new RegType(); };
-  reg.m_TypeInfo.m_HeapDestroy = [](void * ptr) { delete static_cast<RegType *>(ptr); };
+  reg.m_TypeInfo.m_Allocator = &s_Allocator;
+  reg.m_TypeInfo.m_HeapCreate = [](void * alloc) -> void * { auto alloc_ptr = static_cast<NetPoolAllocator<RegType> *>(alloc); return alloc_ptr->Allocate(); };
+  reg.m_TypeInfo.m_HeapDestroy = [](void * ptr, void * alloc) { auto alloc_ptr = static_cast<NetPoolAllocator<RegType> *>(alloc); return alloc_ptr->Deallocate(static_cast<RegType *>(ptr)); };
   reg.m_TypeInfo.m_Serialize = [](const void * val, NetBitWriter & writer) { NetSerializeValue<RegType>(*static_cast<const RegType *>(val), writer); };
   reg.m_TypeInfo.m_SerializeDelta = [](const void * val, const void * compare, NetBitWriter & writer) { return NetSerializeValueDelta<RegType>(*static_cast<const RegType *>(val), *static_cast<const RegType *>(compare), writer); };
   reg.m_TypeInfo.m_Deserialize = [](void * val, NetBitReader & reader) { NetDeserializeValue<RegType>(*static_cast<RegType *>(val), reader); };

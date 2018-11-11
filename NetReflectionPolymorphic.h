@@ -22,7 +22,8 @@ class NetPolymorphic
 public:
   NetPolymorphic()
   {
-    m_Ptr = static_cast<BaseClass *>(BaseClass::__s_TypeDatabase.GetDefaultTypeInfo().m_HeapCreate());
+    auto & type_info = BaseClass::__s_TypeDatabase.GetDefaultTypeInfo();
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate(type_info.m_Allocator));
     m_ClassId = BaseClass::__s_TypeDatabase.GetDefaultClassId();
     m_TypeHash = typeid(BaseClass).hash_code();
   }
@@ -34,14 +35,14 @@ public:
     auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(class_id);
 
     m_ClassId = class_id;
-    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate());
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate(type_info.m_Allocator));
     m_TypeHash = type_info.m_TypeIdHash;
   }
 
   NetPolymorphic(const NetPolymorphic<BaseClass> & rhs)
   {
     auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(rhs.m_ClassId);
-    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate());
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate(type_info.m_Allocator));
     m_ClassId = rhs.m_ClassId;
     m_TypeHash = rhs.m_TypeHash;
 
@@ -51,7 +52,7 @@ public:
   NetPolymorphic(std::size_t class_id, const void * data_ptr)
   {
     auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(class_id);
-    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate());
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate(type_info.m_Allocator));
     m_ClassId = class_id;
     m_TypeHash = type_info.m_TypeIdHash;
 
@@ -79,16 +80,16 @@ public:
   ~NetPolymorphic()
   {
     auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(m_ClassId);
-    type_info.m_HeapDestroy(m_Ptr);
+    type_info.m_HeapDestroy(m_Ptr, type_info.m_Allocator);
   }
 
   NetPolymorphic<BaseClass> & operator = (const NetPolymorphic<BaseClass> & rhs)
   {
     auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(m_ClassId);
-    type_info.m_HeapDestroy(m_Ptr);
+    type_info.m_HeapDestroy(m_Ptr, type_info.m_Allocator);
 
     auto new_type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(rhs.m_ClassId);
-    m_Ptr = static_cast<BaseClass *>(new_type_info.m_HeapCreate());
+    m_Ptr = static_cast<BaseClass *>(new_type_info.m_HeapCreate(new_type_info.m_Allocator));
     m_ClassId = rhs.m_ClassId;
     m_TypeHash = rhs.m_TypeHash;
 
@@ -121,12 +122,15 @@ public:
       return;
     }
 
-    delete m_Ptr;
-
     auto & type_info = BaseClass::__s_TypeDatabase.GetTypeInfo(class_id);
 
+    if(m_Ptr)
+    {
+      type_info.m_HeapDestroy(m_Ptr, type_info.m_Allocator);
+    }
+
     m_ClassId = class_id;
-    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate());
+    m_Ptr = static_cast<BaseClass *>(type_info.m_HeapCreate(type_info.m_Allocator));
     m_TypeHash = type_info.m_TypeIdHash;
   }
 
